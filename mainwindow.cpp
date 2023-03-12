@@ -92,10 +92,7 @@ void MainWindow::save()
     out<<"NODES\n";
     foreach(Node *n,graph->getNodes()){
         out<<n->getName()<<" "
-           <<QString::number(n->getWeight())<<" "
-           <<QString::number(n->getColor().red())<<" "
-           <<QString::number(n->getColor().green())<<" "
-           <<QString::number(n->getColor().blue())<<"\n";
+           <<QString::number(n->getWeight())<<"\n";
     }
     out<<"EDGES\n";
     foreach(Edge *e,graph->getEdges()){

@@ -5,8 +5,8 @@
 #include "mainwindow.h"
 
 /*set new node*/
-Node::Node(GraphicWindow *GraphicWindow,QString n, int w, QColor c)
-    : graphic(GraphicWindow),name(n),weight(w),color(c)
+Node::Node(GraphicWindow *GraphicWindow, QString n, int w)
+    : graphic(GraphicWindow),name(n),weight(w)
 {
     setFlag(ItemIsMovable);
     setFlag(ItemIsSelectable);
@@ -18,10 +18,7 @@ Node::Node(GraphicWindow *GraphicWindow,QString n, int w, QColor c)
 }
 
 /**/
-Node::~Node()
-{
-
-}
+Node::~Node(){}
 
 /*remove this node from view, from nodes list and graph manager*/
 void Node::removeThis()

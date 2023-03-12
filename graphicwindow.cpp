@@ -70,12 +70,8 @@ GraphicWindow::GraphicWindow(QWidget *parent,MainWindow *wind,QString fileName):
             QStringList list = line.split(" ");
             QString name = list.at(0);
             int weight = list.at(1).toInt();
-            int redcolor = list.at(2).toInt();
-            int greencolor = list.at(3).toInt();
-            int bluecolor = list.at(4).toInt();
-            QColor kolor(redcolor,greencolor,bluecolor,255);
 
-            mngr->addItem(new Node(this,name,weight,kolor));
+            mngr->addItem(new Node(this,name,weight));
             scene->addItem(mngr->getLastNode());
         }
         else if(nextline=="Edge")
@@ -171,7 +167,7 @@ void GraphicWindow::newEdge(Edge *e)
 void GraphicWindow::addNode(QString name,int weight)
 {
 
-    Node *newNode =new Node(this,name,weight,Qt::black);
+    Node *newNode =new Node(this,name,weight);
     mngr->addItem(newNode);
     scene()->addItem(newNode);
 
