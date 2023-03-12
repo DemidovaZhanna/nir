@@ -14,10 +14,7 @@ void error(QString text)
     msgBox.exec();
 }
 
-MainWindow::~MainWindow()
-{
-
-}
+MainWindow::~MainWindow(){}
 
 MainWindow::MainWindow()
 {
@@ -155,16 +152,11 @@ void MainWindow::clearAll()
     {
         nodeNameLine->clear();
     }
+
     if(nodeWeightLine->text()!="")
     {
         nodeWeightLine->clear();
     }
-
-        //
-    //if(edgeWeightLine->text()!="")
-        //edgeWeightLine->clear();
-    //if(addEdgeWeight->text()!="")
-        //addEdgeWeight->clear();
 
     if(addNodeName->text()!="")
     {
@@ -212,7 +204,7 @@ void MainWindow::createEditNode()
     nodeEdit->addWidget(nodeNameSet);
     nodeEdit->addSeparator();
 
-    nodeWeightLabel=new QLabel("Weight: ");
+    nodeWeightLabel=new QLabel("State: ");
     nodeEdit->addWidget(nodeWeightLabel);
     nodeWeightLine=new QLineEdit();
     nodeWeightLine->setValidator( new QIntValidator(0,100));
@@ -220,11 +212,6 @@ void MainWindow::createEditNode()
     nodeWeightSet=new QPushButton("Set",this);
     connect(nodeWeightSet, SIGNAL (released()), this, SLOT(setNodeWeight()));
     nodeEdit->addWidget(nodeWeightSet);
-    nodeEdit->addSeparator();
-
-    nodeColorEditor=new QPushButton("Choose node color");
-    connect(nodeColorEditor, SIGNAL (released()), this, SLOT(setNodeColor()));
-    nodeEdit->addWidget(nodeColorEditor);
     nodeEdit->addSeparator();
 
     closeNodeEdit=new QPushButton("Close editor",this);
@@ -533,7 +520,7 @@ void MainWindow::createSelector()
     layout->addWidget(new QLabel("Name: "));
     addNodeName=new QLineEdit();
     layout->addWidget(addNodeName);
-    layout->addWidget(new QLabel("Weight: "));
+    layout->addWidget(new QLabel("State: "));
     addNodeWeight=new QLineEdit();
     addNodeWeight->setValidator( new QIntValidator(0,100));
     layout->addWidget(addNodeWeight);
@@ -661,7 +648,7 @@ void MainWindow::addEdge()
 /*add new node to nodes list (when graph is loaded from file)*/
 void MainWindow::addNode(Node *n)
 {
-    QString item=" Name: " +n->getName()+" Weight: "+QString::number(n->getWeight());
+    QString item=" Name: " +n->getName()+" State: "+QString::number(n->getWeight());
 
     nodesTable->addItem(new QListWidgetItem(item));
     sourceNodes->addItem(QString(n->getName()));
