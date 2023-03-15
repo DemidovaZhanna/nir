@@ -242,7 +242,7 @@ void MainWindow::setNodeName()
     if(sourceNodes->findText(nodeNameLine->text())==-1)
     {
         QString oldName=activeNode->getName();
-        nodesTable->currentItem()->setText(" Nam: "+nodeNameLine->text()+" State: "+QString::number(activeNode->getWeight()));
+        nodesTable->currentItem()->setText(" Number: "+nodeNameLine->text()+" State: "+QString::number(activeNode->getWeight()));
         activeNode->setName(nodeNameLine->text());
 
         int pos=sourceNodes->findText(oldName);
@@ -359,7 +359,7 @@ void MainWindow::createEditEdge()
     edgeEdit->addWidget(edgeDirSet);
     edgeEdit->addSeparator();
 
-    edgeEdit->addWidget(new QLabel("Weight: "));
+    edgeEdit->addWidget(new QLabel("Marker: "));
     edgeWeightLine=new QLineEdit();
     edgeWeightLine->setValidator( new QIntValidator(0,100));
     edgeEdit->addWidget(edgeWeightLine);
@@ -416,13 +416,13 @@ void MainWindow::setEdgeWeight()
         {
             item+=" <-> ";
         }
-        item+=activeEdge->getDest()+" Weight: "+edgeWeightLine->text();
+        item+=activeEdge->getDest()+" Marker: "+edgeWeightLine->text();
 
         edgesTable->currentItem()->setText(item);
         activeEdge->setWeight(edgeWeightLine->text().toInt());
     }
     else
-        error("Type weight first!");
+        error("Type marker first!");
 }
 
 /*set new source for selected edge*/
@@ -571,7 +571,7 @@ void MainWindow::createSelector()
     directionOfEdge->insertItem(1,QString("DEST_TO_SOURCE"));
     directionOfEdge->insertItem(2,QString("TWO_WAY"));
     layout2->addWidget(directionOfEdge);
-    layout2->addWidget(new QLabel("Weight: "));
+    layout2->addWidget(new QLabel("Marker: "));
     addEdgeWeight=new QLineEdit();
     addEdgeWeight->setValidator( new QIntValidator(0,100));
     layout2->addWidget(addEdgeWeight);
@@ -625,7 +625,7 @@ void MainWindow::addEdge()
 {
     if(addEdgeWeight->text()=="")
     {
-        error("Type weight first!");
+        error("Type marker first!");
     }
     else
     {
@@ -683,7 +683,7 @@ void MainWindow::addEdge(Edge *e)
     {
         item+=" <-> ";
     }
-    item+=e->getDest()+" Weight: "+QString::number(e->getWeight());
+    item+=e->getDest()+" Marker: "+QString::number(e->getWeight());
     edgesTable->addItem(new QListWidgetItem(item));
 }
 
