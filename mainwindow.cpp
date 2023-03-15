@@ -92,13 +92,14 @@ void MainWindow::save()
     out<<"NODES\n";
     foreach(Node *n,graph->getNodes()){
         out<<n->getName()<<" "
-           <<QString::number(n->getWeight())<<"\n";
+           <<QString::number(n->getWeight())<<" "
+           <<n->getDesc()<<"\n";
     }
     out<<"EDGES\n";
     foreach(Edge *e,graph->getEdges()){
         out<<e->getSource()<<" "
            <<e->getDest()<<" "
-           <<QString::number(e->getWeight())<<" "
+           <<e->getWeight()<<" "
            <<QString::number(static_cast<int>(e->getDirection()))<<"\n";
     }
 
@@ -122,7 +123,7 @@ void MainWindow::createActions()
     saveAct->setStatusTip(tr("Save the document to disk"));
     connect(saveAct, &QAction::triggered, this, &MainWindow::save);
 
-    exitAct = new QAction(tr("E&xit"), this);
+    exitAct = new QAction(tr("&Exit"), this);
     exitAct->setShortcuts(QKeySequence::Quit);
     exitAct->setStatusTip(tr("Exit the application"));
     connect(exitAct, &QAction::triggered, this, &QWidget::close);
@@ -378,7 +379,7 @@ void MainWindow::showEditEdge()
 
     edgeEdit->setVisible(true);
 
-    edgeWeightLine->setText(QString::number(activeEdge->getWeight()));
+    edgeWeightLine->setText(activeEdge->getWeight());
 
     int sourcepos=sourceNodes2->findText(activeEdge->getSource());
     int destpos=destNodes2->findText(activeEdge->getDest());
@@ -419,7 +420,7 @@ void MainWindow::setEdgeWeight()
         item+=activeEdge->getDest()+" Marker: "+edgeWeightLine->text();
 
         edgesTable->currentItem()->setText(item);
-        activeEdge->setWeight(edgeWeightLine->text().toInt());
+        activeEdge->setWeight(edgeWeightLine->text());
     }
     else
         error("Type marker first!");
@@ -447,7 +448,7 @@ void MainWindow::setEdgeSource()
     }
 
     Node *dest=activeEdge->getDestNode();
-    int weight=activeEdge->getWeight();
+    QString weight=activeEdge->getWeight();
     Direction dir=activeEdge->getDirection();
 
     QListWidgetItem* item = edgesTable->currentItem();
@@ -482,7 +483,7 @@ void MainWindow::setEdgeDest()
     }
 
     Node *source=activeEdge->getSourceNode();
-    int weight=activeEdge->getWeight();
+    QString weight=activeEdge->getWeight();
     Direction dir=activeEdge->getDirection();
 
     QListWidgetItem* item = edgesTable->currentItem();
@@ -573,7 +574,6 @@ void MainWindow::createSelector()
     layout2->addWidget(directionOfEdge);
     layout2->addWidget(new QLabel("Marker: "));
     addEdgeWeight=new QLineEdit();
-    addEdgeWeight->setValidator( new QIntValidator(0,100));
     layout2->addWidget(addEdgeWeight);
     newEdgeButton=new QPushButton("Add new edge..");
     connect(newEdgeButton, SIGNAL (released()), this, SLOT(addEdge()));
@@ -650,7 +650,7 @@ void MainWindow::addEdge()
         Node *s=graphic->getMngr()->getNodeByName(sourceNodes->currentText());
         Node *d=graphic->getMngr()->getNodeByName(destNodes->currentText());
         Direction dir=static_cast<Direction>(directionOfEdge->currentText().toInt());
-        int weight=addEdgeWeight->text().toInt();
+        QString weight=addEdgeWeight->text();
         graphic->addEdge(s,d,weight,dir);
     }
 }
@@ -683,7 +683,7 @@ void MainWindow::addEdge(Edge *e)
     {
         item+=" <-> ";
     }
-    item+=e->getDest()+" Marker: "+QString::number(e->getWeight());
+    item+=e->getDest()+" Marker: "+e->getWeight();
     edgesTable->addItem(new QListWidgetItem(item));
 }
 

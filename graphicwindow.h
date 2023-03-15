@@ -27,7 +27,7 @@ public:
     void newNode(Node *n);
     void newEdge(Edge *e);
     void addNode(QString name,int weight, QString desc);
-    void addEdge(Node *source, Node *dest, int weight, Direction dir);
+    void addEdge(Node *source, Node *dest, QString weight, Direction dir);
 
 protected:
     void scaleView(qreal scaleFactor);

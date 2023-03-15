@@ -19,7 +19,7 @@ class Edge : public QGraphicsItem
 public:
     Edge(Node *getSourceNode,
          Node *getDestNode,
-         int w,
+         QString w,
          Direction d,
          GraphicWindow *graphicWindow);
     ~Edge();
@@ -34,11 +34,11 @@ public:
     Node *getDestNode() const;
     QString getSource();
     QString getDest();
-    int getWeight();
+    QString getWeight();
     Direction getDirection();
     void setSource(Node *s);
     void setDest(Node *d);
-    void setWeight(int w);
+    void setWeight(QString w);
     void setDirection(Direction d);
 
 protected:
@@ -55,7 +55,7 @@ private:
     QString destName;
     QPointF sourcePoint;
     QPointF destPoint;
-    int weight;
+    QString weight;
     Direction direction;
     bool selected;
     GraphicWindow *graphic;
