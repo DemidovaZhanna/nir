@@ -42,7 +42,7 @@ void MainWindow::newFile()
 /*file->open*/
 void MainWindow::open()
 {
-    QString directory = QFileDialog::getOpenFileName(this,tr("Open.."),"/home/zhanna",tr("Graph files(*.graph)"));
+    QString directory = QFileDialog::getOpenFileName(this,tr("Open.."),"/home/zhanna/temp",tr("Graph files(*.graph)"));
     if(directory.isEmpty())
         return;
 
@@ -76,7 +76,7 @@ void MainWindow::createGraphicWindow(QString directory)
 /*file->save*/
 void MainWindow::save()
 {
-    QString directory = QFileDialog::getSaveFileName(this,tr("Save.."),"/home/zhanna",tr("Graph files(*.graph)"));
+    QString directory = QFileDialog::getSaveFileName(this,tr("Save.."),"/home/zhanna/temp",tr("Graph files(*.graph)"));
     if(directory.isEmpty())
         return;
 
@@ -145,42 +145,36 @@ void MainWindow::clearAll()
     activeNode=NULL;
     activeEdge=NULL;
 
-    if(nodeNameLine->text()!="")
-    {
+    if(nodeNameLine->text() != "")
         nodeNameLine->clear();
-    }
 
-    if(nodeWeightLine->text()!="")
-    {
+    if(nodeWeightLine->text() != "")
         nodeWeightLine->clear();
-    }
 
-    if(addNodeName->text()!="")
-    {
+    if(nodeDescLine->text() != "")
+        nodeDescLine->clear();
+
+
+    if(addNodeName->text() != "")
         addNodeName->clear();
-    }
 
-    if(addNodeWeight->text()!="")
-    {
+    if(addNodeWeight->text() != "")
         addNodeWeight->clear();
-    }
 
-    if(nodesTable->count()>0)
-    {
+    if(addNodeDesc->text() != "")
+        addNodeDesc->clear();
+
+    if(nodesTable->count() > 0)
         nodesTable->clear();
-    }
-    if(edgesTable->count()>0)
-    {
+
+    if(edgesTable->count() > 0)
         edgesTable->clear();
-    }
-    if(sourceNodes->count()>0)
-    {
+
+    if(sourceNodes->count() > 0)
         sourceNodes->clear();
-    }
-    if(destNodes->count()>0)
-    {
+
+    if(destNodes->count() > 0)
         destNodes->clear();
-    }
 }
 
 /*create node editor*/
@@ -211,6 +205,15 @@ void MainWindow::createEditNode()
     nodeEdit->addWidget(nodeWeightSet);
     nodeEdit->addSeparator();
 
+    nodeDescLabel=new QLabel("Description: ");
+    nodeEdit->addWidget(nodeDescLabel);
+    nodeDescLine=new QLineEdit();
+    nodeEdit->addWidget(nodeDescLine);
+    nodeDescSet=new QPushButton("Set",this);
+    connect(nodeDescSet, SIGNAL (released()), this, SLOT(setNodeDesc()));
+    nodeEdit->addWidget(nodeDescSet);
+    nodeEdit->addSeparator();
+
     closeNodeEdit=new QPushButton("Close editor",this);
     connect(closeNodeEdit, SIGNAL (released()), this, SLOT(hideEditNode()));
     nodeEdit->addWidget(closeNodeEdit);
@@ -229,6 +232,7 @@ void MainWindow::showEditNode(){
     nodeEdit->setVisible(true);
     nodeNameLine->setText(activeNode->getName());
     nodeWeightLine->setText(QString::number(activeNode->getWeight()));
+    nodeDescLine->setText(activeNode->getDesc());
     removeNodeButton->setEnabled(true);
 }
 
@@ -238,7 +242,7 @@ void MainWindow::setNodeName()
     if(sourceNodes->findText(nodeNameLine->text())==-1)
     {
         QString oldName=activeNode->getName();
-        nodesTable->currentItem()->setText(" Name: "+nodeNameLine->text()+" Weight: "+QString::number(activeNode->getWeight()));
+        nodesTable->currentItem()->setText(" Nam: "+nodeNameLine->text()+" State: "+QString::number(activeNode->getWeight()));
         activeNode->setName(nodeNameLine->text());
 
         int pos=sourceNodes->findText(oldName);
@@ -257,7 +261,7 @@ void MainWindow::setNodeName()
         destNodes2->setItemText(pos,activeNode->getName());
         destNodes2->update();
 
-        for(int i=0;i<edgesTable->count();i++)
+        for(int i = 0; i < edgesTable->count(); i++)
         {
             QListWidgetItem *item=edgesTable->item(i);
             QString text=item->text();
@@ -268,11 +272,11 @@ void MainWindow::setNodeName()
     }
     else if(nodeNameLine->text()=="")
     {
-        error("Type name first!");
+        error("Type number first!");
     }
     else
     {
-        error("There already is node with that name!");
+        error("There already is node with that number!");
     }
 }
 
@@ -281,11 +285,21 @@ void MainWindow::setNodeWeight()
 {
     if(nodeWeightLine->text()!="")
     {
-        nodesTable->currentItem()->setText(" Name: "+activeNode->getName()+" Weight: "+nodeWeightLine->text());
+        nodesTable->currentItem()->setText(" Number: "+activeNode->getName()+" State: "+nodeWeightLine->text());
         activeNode->setWeight(nodeWeightLine->text().toInt());
     }
     else
-        error("Type weight first!");
+        error("Type state first!");
+}
+
+/*set new description for selected node*/
+void MainWindow::setNodeDesc()
+{
+    if(nodeDescLine->text()!="")
+        activeNode->setDesc(nodeDescLine->text());
+
+    else
+        error("Type decription first!");
 }
 
 /*set new color for selected node*/
@@ -514,6 +528,7 @@ void MainWindow::createSelector()
 
     nodeAddPanel=new QGroupBox();
     QVBoxLayout *layout=new QVBoxLayout();
+
     layout->addWidget(new QLabel("Name: "));
     addNodeName=new QLineEdit();
     layout->addWidget(addNodeName);
@@ -521,6 +536,9 @@ void MainWindow::createSelector()
     addNodeWeight=new QLineEdit();
     addNodeWeight->setValidator( new QIntValidator(0,100));
     layout->addWidget(addNodeWeight);
+    layout->addWidget(new QLabel("Description: "));
+    addNodeDesc=new QLineEdit();
+    layout->addWidget(addNodeDesc);
     newNodeButton=new QPushButton("Add new Node..");
     connect(newNodeButton, SIGNAL (released()), this, SLOT(addNode()));
     layout->addWidget(newNodeButton);
@@ -590,21 +608,16 @@ void MainWindow::hideSelector()
 void MainWindow::addNode()
 {
     if(sourceNodes->findText(addNodeName->text())==-1 && addNodeWeight->text()!="" && addNodeName->text()!="")
-    {
-        graphic->addNode(addNodeName->text(),addNodeWeight->text().toInt());
-    }
+        graphic->addNode(addNodeName->text(),addNodeWeight->text().toInt(), addNodeDesc->text());
     else if(addNodeWeight->text()=="")
-    {
         error("Type weight first!");
-    }
     else if(addNodeName->text()=="")
-    {
         error("Type name first!");
-    }
+    else if(addNodeDesc->text()=="")
+        error("Type description first!");
+
     else
-    {
         error("There already is node with that name!");
-    }
 }
 
 /*add new edge to graph (from panel)*/

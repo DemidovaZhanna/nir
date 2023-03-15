@@ -5,8 +5,8 @@
 #include "mainwindow.h"
 
 /*set new node*/
-Node::Node(GraphicWindow *GraphicWindow, QString n, int w)
-    : graphic(GraphicWindow),name(n),weight(w)
+Node::Node(GraphicWindow *GraphicWindow, QString n, int w, QString d)
+    : graphic(GraphicWindow), name(n), weight(w), desc(d)
 {
     setFlag(ItemIsMovable);
     setFlag(ItemIsSelectable);
@@ -189,6 +189,12 @@ int Node::getWeight()
     return weight;
 }
 
+/*return node description*/
+QString Node::getDesc()
+{
+    return desc;
+}
+
 /*return node color*/
 QColor Node::getColor()
 {
@@ -206,6 +212,13 @@ void Node::setName(QString n)
 void Node::setWeight(int w)
 {
     weight=w;
+    this->update();
+}
+
+/*set new decription for node*/
+void Node::setDesc(QString d)
+{
+    desc = d;
     this->update();
 }
 

@@ -26,7 +26,7 @@ public:
     void showEditEdge(Edge *e);
     void newNode(Node *n);
     void newEdge(Edge *e);
-    void addNode(QString name,int weight);
+    void addNode(QString name,int weight, QString desc);
     void addEdge(Node *source, Node *dest, int weight, Direction dir);
 
 protected:

@@ -13,7 +13,7 @@ class GraphicWindow;
 
 class Node : public QGraphicsItem{
 public:
-    Node(GraphicWindow *graphWidget, QString n, int w);
+    Node(GraphicWindow *graphWidget, QString n, int w, QString d);
     ~Node();
     void removeThis();
     void addEdge(Edge *edge);
@@ -31,11 +31,13 @@ public:
     QList<Edge *> edges() const;
     QString getName();
     int getWeight();
+    QString getDesc();
     QColor getColor();
 
     //setery
     void setName(QString n);
     void setWeight(int w);
+    void setDesc(QString d);
     void setColor(QColor c);
 
     void selectThis();
@@ -53,6 +55,7 @@ private:
     QList<Edge *> edgeList;
     QString name;
     int weight;
+    QString desc;
     QColor color;
     bool selected=false;
 };

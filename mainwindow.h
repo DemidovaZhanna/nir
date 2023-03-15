@@ -48,6 +48,7 @@ private slots:
     void hideEditNode();
     void setNodeName();
     void setNodeWeight();
+    void setNodeDesc();
     void setNodeColor();
 
     void hideEditEdge();
@@ -94,7 +95,9 @@ private:
     QLabel *nodeWeightLabel;
     QLineEdit *nodeWeightLine;
     QPushButton *nodeWeightSet;
-    QPushButton *nodeColorEditor;
+    QLabel *nodeDescLabel;
+    QLineEdit *nodeDescLine;
+    QPushButton *nodeDescSet;
     QPushButton *closeNodeEdit;
 
     /*edge editor*/
@@ -117,6 +120,7 @@ private:
     QGroupBox *nodeAddPanel;
     QLineEdit *addNodeName;
     QLineEdit *addNodeWeight;
+    QLineEdit *addNodeDesc;
     QPushButton *newNodeButton;
     QPushButton *removeNodeButton;
     //edge add panel

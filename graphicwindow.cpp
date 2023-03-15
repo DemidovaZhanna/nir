@@ -70,8 +70,9 @@ GraphicWindow::GraphicWindow(QWidget *parent,MainWindow *wind,QString fileName):
             QStringList list = line.split(" ");
             QString name = list.at(0);
             int weight = list.at(1).toInt();
+            QString desc = list.at(2);
 
-            mngr->addItem(new Node(this,name,weight));
+            mngr->addItem(new Node(this, name, weight, desc));
             scene->addItem(mngr->getLastNode());
         }
         else if(nextline=="Edge")
@@ -164,10 +165,10 @@ void GraphicWindow::newEdge(Edge *e)
 }
 
 /*add new node to graphic view and graph manager*/
-void GraphicWindow::addNode(QString name,int weight)
+void GraphicWindow::addNode(QString name,int weight, QString desc)
 {
 
-    Node *newNode =new Node(this,name,weight);
+    Node *newNode =new Node(this, name, weight, desc);
     mngr->addItem(newNode);
     scene()->addItem(newNode);
 
