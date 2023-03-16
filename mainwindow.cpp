@@ -29,6 +29,7 @@ MainWindow::MainWindow()
     createActions();
     createMenus();
     createSelector();
+    createEdgeTable();
     createEditNode();
     createEditEdge();
 }
@@ -71,6 +72,7 @@ void MainWindow::createGraphicWindow(QString directory)
     this->setCentralWidget(graphic);
 
     showSelector();
+    showEdgeTable();
 }
 
 /*file->save*/
@@ -223,6 +225,7 @@ void MainWindow::createEditNode()
 
 /*hide node editor*/
 void MainWindow::hideEditNode(){
+    edgeTable->setVisible(true);
     nodeEdit->setVisible(false);
     removeNodeButton->setEnabled(false);
 }
@@ -230,6 +233,7 @@ void MainWindow::hideEditNode(){
 /*show node editor*/
 void MainWindow::showEditNode(){
     hideEditEdge();
+    hideEdgeTable();
     nodeEdit->setVisible(true);
     nodeNameLine->setText(activeNode->getName());
     nodeWeightLine->setText(QString::number(activeNode->getWeight()));
@@ -376,7 +380,7 @@ void MainWindow::createEditEdge()
 void MainWindow::showEditEdge()
 {
     hideEditNode();
-
+    hideEdgeTable();
     edgeEdit->setVisible(true);
 
     edgeWeightLine->setText(activeEdge->getWeight());
@@ -397,6 +401,7 @@ void MainWindow::hideEditEdge()
 {
     edgeEdit->setVisible(false);
     removeEdgeButton->setEnabled(false);
+    showEdgeTable();
 }
 
 /*set new weight for selected edge*/
@@ -548,7 +553,7 @@ void MainWindow::createSelector()
     selector->addSeparator();
 
     selector->addWidget(new QLabel("\nEdges:"));
-    edgesTable=new QListWidget();;
+    edgesTable=new QListWidget();
     edgesTable->setMaximumWidth(250);
     edgesTable->setMaximumHeight(250);
     connect(edgesTable, SIGNAL(itemPressed(QListWidgetItem *)), this, SLOT(edgeItemClicked(QListWidgetItem *)));
@@ -589,19 +594,53 @@ void MainWindow::createSelector()
     hideSelector();
 }
 
+void MainWindow::createEdgeTable()
+{
+    edgeTable = new QToolBar(tr("\nMarker table"), this);
+    this->addToolBar(Qt::LeftToolBarArea, edgeTable);
+    edgeTable->setMovable(false);
+    edgeTable->addSeparator();
+
+    edgeTable->addWidget(new QLabel("Marker table:"));
+    markerTable=new QTableWidget();
+    markerTable->setMaximumWidth(250);
+    markerTable->setMaximumHeight(250);
+    markerTable->setColumnCount(2);
+    markerTable->horizontalHeader()->setStretchLastSection(true);
+    markerTable->showGrid();
+
+    markerTable->setHorizontalHeaderLabels(QStringList() << trUtf8("Marker")
+                                                         << trUtf8("Verbal description"));
+
+
+
+//    connect(markerTable, SIGNAL(itemPressed(QListWidgetItem *)), this, SLOT(nodeItemClicked(QListWidgetItem *)));
+    edgeTable->addWidget(markerTable);
+    edgeTable->addSeparator();
+
+    hideEdgeTable();
+}
+
 /*show selector*/
 void MainWindow::showSelector()
 {
-    //if(openSelector->isChecked())
-        selector->setVisible(true);
-    //else
-        //hideSelector();
+    selector->setVisible(true);
+}
+
+void MainWindow::showEdgeTable()
+{
+    edgeTable->setVisible(true);
 }
 
 /*hide selector */
 void MainWindow::hideSelector()
 {
     selector->setVisible(false);
+}
+
+void MainWindow::hideEdgeTable()
+{
+    edgeTable->setVisible(false);
 }
 
 /*add new node to graph (from panel)*/

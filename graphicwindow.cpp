@@ -142,6 +142,7 @@ void GraphicWindow::unselectAll()
 void GraphicWindow::showEditNode(Node *n)
 {
     wndw->setActiveNode(n);
+    wndw->hideEdgeTable();
     wndw->showEditNode();
 }
 
@@ -149,6 +150,7 @@ void GraphicWindow::showEditNode(Node *n)
 void GraphicWindow::showEditEdge(Edge *e)
 {
     wndw->setActiveEdge(e);
+    wndw->hideEdgeTable();
     wndw->showEditEdge();
 }
 

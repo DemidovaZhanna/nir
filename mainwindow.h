@@ -32,6 +32,8 @@ public:
     ~MainWindow();
     void showEditNode();
     void showEditEdge();
+    void showEdgeTable();
+    void hideEdgeTable();
 
     void addNode(Node *n);
     void addEdge(Edge *e);
@@ -73,6 +75,7 @@ private:
     void createEditNode();
     void createEditEdge();
     void createSelector();
+    void createEdgeTable();
     void createGraphicWindow(QString directory);
     void clearAll();
 
@@ -116,6 +119,9 @@ private:
     QToolBar *selector;
     QListWidget *nodesTable;
     QListWidget *edgesTable;
+    //edgeTable
+    QToolBar *edgeTable;
+    QTableWidget *markerTable;
     //node add panel
     QGroupBox *nodeAddPanel;
     QLineEdit *addNodeName;
