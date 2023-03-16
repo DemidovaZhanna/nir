@@ -364,7 +364,7 @@ void MainWindow::createEditEdge()
     edgeEdit->addWidget(edgeDirSet);
     edgeEdit->addSeparator();
 
-    edgeEdit->addWidget(new QLabel("Marker: "));
+    edgeEdit->addWidget(new QLabel("Input marker: "));
     edgeWeightLine=new QLineEdit();
     edgeWeightLine->setValidator( new QIntValidator(0,100));
     edgeEdit->addWidget(edgeWeightLine);
@@ -422,13 +422,13 @@ void MainWindow::setEdgeWeight()
         {
             item+=" <-> ";
         }
-        item+=activeEdge->getDest()+" Marker: "+edgeWeightLine->text();
+        item+=activeEdge->getDest()+" Input marker: "+edgeWeightLine->text();
 
         edgesTable->currentItem()->setText(item);
         activeEdge->setWeight(edgeWeightLine->text());
     }
     else
-        error("Type marker first!");
+        error("Type input marker first!");
 }
 
 /*set new source for selected edge*/
@@ -577,7 +577,7 @@ void MainWindow::createSelector()
     directionOfEdge->insertItem(1,QString("DEST_TO_SOURCE"));
     directionOfEdge->insertItem(2,QString("TWO_WAY"));
     layout2->addWidget(directionOfEdge);
-    layout2->addWidget(new QLabel("Marker: "));
+    layout2->addWidget(new QLabel("Input Marker: "));
     addEdgeWeight=new QLineEdit();
     layout2->addWidget(addEdgeWeight);
     newEdgeButton=new QPushButton("Add new edge..");
@@ -609,7 +609,7 @@ void MainWindow::createEdgeTable()
     markerTable->horizontalHeader()->setStretchLastSection(true);
     markerTable->showGrid();
 
-    markerTable->setHorizontalHeaderLabels(QStringList() << trUtf8("Marker")
+    markerTable->setHorizontalHeaderLabels(QStringList() << trUtf8("Input marker")
                                                          << trUtf8("Verbal description"));
 
 
@@ -664,7 +664,7 @@ void MainWindow::addEdge()
 {
     if(addEdgeWeight->text()=="")
     {
-        error("Type marker first!");
+        error("Type input marker first!");
     }
     else
     {
@@ -722,7 +722,7 @@ void MainWindow::addEdge(Edge *e)
     {
         item+=" <-> ";
     }
-    item+=e->getDest()+" Marker: "+e->getWeight();
+    item+=e->getDest()+" Input marker: "+e->getWeight();
     edgesTable->addItem(new QListWidgetItem(item));
 }
 
