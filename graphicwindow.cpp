@@ -90,7 +90,7 @@ GraphicWindow::GraphicWindow(QWidget *parent,MainWindow *wind,QString fileName):
                     des = n;
             }
 
-            QString waga = list.at(2);
+            int waga = list.at(2).toInt();
             Direction dir = (Direction)list.at(3).toInt();
 
             mngr->addItem(new Edge(sourc,des,waga,dir,this));
@@ -183,7 +183,7 @@ void GraphicWindow::addNode(QString name,int weight, QString desc)
 }
 
 /*add new edge to graphic view and graph manager*/
-void GraphicWindow::addEdge(Node *source,Node *dest,QString weight,Direction dir)
+void GraphicWindow::addEdge(Node *source,Node *dest,int weight,Direction dir)
 {
     Edge *newEdge=new Edge(source,dest,weight,dir,this);
     mngr->addItem(newEdge);

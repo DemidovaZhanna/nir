@@ -383,7 +383,7 @@ void MainWindow::showEditEdge()
     hideEdgeTable();
     edgeEdit->setVisible(true);
 
-    edgeWeightLine->setText(activeEdge->getWeight());
+    edgeWeightLine->setText(QString::number(activeEdge->getWeight()));
 
     int sourcepos=sourceNodes2->findText(activeEdge->getSource());
     int destpos=destNodes2->findText(activeEdge->getDest());
@@ -425,7 +425,7 @@ void MainWindow::setEdgeWeight()
         item+=activeEdge->getDest()+" Input marker: "+edgeWeightLine->text();
 
         edgesTable->currentItem()->setText(item);
-        activeEdge->setWeight(edgeWeightLine->text());
+        activeEdge->setWeight(edgeWeightLine->text().toInt());
     }
     else
         error("Type input marker first!");
@@ -453,7 +453,7 @@ void MainWindow::setEdgeSource()
     }
 
     Node *dest=activeEdge->getDestNode();
-    QString weight=activeEdge->getWeight();
+    int weight=activeEdge->getWeight();
     Direction dir=activeEdge->getDirection();
 
     QListWidgetItem* item = edgesTable->currentItem();
@@ -488,7 +488,7 @@ void MainWindow::setEdgeDest()
     }
 
     Node *source=activeEdge->getSourceNode();
-    QString weight=activeEdge->getWeight();
+    int weight=activeEdge->getWeight();
     Direction dir=activeEdge->getDirection();
 
     QListWidgetItem* item = edgesTable->currentItem();
@@ -579,6 +579,7 @@ void MainWindow::createSelector()
     layout2->addWidget(directionOfEdge);
     layout2->addWidget(new QLabel("Input Marker: "));
     addEdgeWeight=new QLineEdit();
+    addEdgeWeight->setValidator( new QIntValidator(0,100));
     layout2->addWidget(addEdgeWeight);
     newEdgeButton=new QPushButton("Add new edge..");
     connect(newEdgeButton, SIGNAL (released()), this, SLOT(addEdge()));
@@ -689,7 +690,7 @@ void MainWindow::addEdge()
         Node *s=graphic->getMngr()->getNodeByName(sourceNodes->currentText());
         Node *d=graphic->getMngr()->getNodeByName(destNodes->currentText());
         Direction dir=static_cast<Direction>(directionOfEdge->currentText().toInt());
-        QString weight=addEdgeWeight->text();
+        int weight=addEdgeWeight->text().toInt();
         graphic->addEdge(s,d,weight,dir);
     }
 }
