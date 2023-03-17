@@ -151,7 +151,7 @@ void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
         painter->setPen(Qt::black);
     else
         painter->setPen(Qt::white);
-    painter->drawText(textRect,Qt::AlignCenter, name+":"+QString::number(weight));
+    painter->drawText(textRect,Qt::AlignCenter, name + ":" + QString::number(weight));
 
     update();
 }

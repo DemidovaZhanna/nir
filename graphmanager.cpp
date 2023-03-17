@@ -113,9 +113,6 @@ void GraphManager::unselectAllEdges()
 /*return true if nodes list and edges list is empty*/
 bool GraphManager::isClean()
 {
-    if(nodes.isEmpty() && edges.isEmpty())
-        return true;
-    else
-        return false;
+    return nodes.isEmpty() && edges.isEmpty();
 }
 

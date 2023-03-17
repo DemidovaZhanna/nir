@@ -76,6 +76,7 @@ private:
     void createEditEdge();
     void createSelector();
     void createEdgeTable();
+    void deleteEdgeTable();
     void createGraphicWindow(QString directory);
     void clearAll();
 
@@ -106,6 +107,7 @@ private:
     /*edge editor*/
     QToolBar *edgeEdit;
     QLineEdit *edgeWeightLine;
+    QLineEdit *edgeOutWLine;
     QPushButton *edgeSourceSet;
     QPushButton *edgeDestSet;
     QPushButton *edgeDirSet;
@@ -135,8 +137,11 @@ private:
     QComboBox *destNodes;
     QComboBox *directionOfEdge;
     QLineEdit *addEdgeWeight;
+    QLineEdit *addEdgeOutW;
     QPushButton *newEdgeButton;
     QPushButton *removeEdgeButton;
+
+    std::vector<std::pair<int, int>> Weight;
 };
 
 #endif // MAINWINDOW_H

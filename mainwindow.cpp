@@ -102,9 +102,9 @@ void MainWindow::save()
         out<<e->getSource()<<" "
            <<e->getDest()<<" "
            <<e->getWeight()<<" "
+           <<e->getOutWeight()<<" "
            <<QString::number(static_cast<int>(e->getDirection()))<<"\n";
     }
-
 }
 
 /*connect menu buttons with actions*/
@@ -368,6 +368,10 @@ void MainWindow::createEditEdge()
     edgeWeightLine=new QLineEdit();
     edgeWeightLine->setValidator( new QIntValidator(0,100));
     edgeEdit->addWidget(edgeWeightLine);
+    edgeEdit->addWidget(new QLabel("Output marker: "));
+    edgeOutWLine=new QLineEdit();
+    edgeOutWLine->setValidator( new QIntValidator(0,100));
+    edgeEdit->addWidget(edgeOutWLine);
     edgeEdit->addWidget(edgeWeightSet);
     edgeEdit->addSeparator();
 
@@ -384,6 +388,7 @@ void MainWindow::showEditEdge()
     edgeEdit->setVisible(true);
 
     edgeWeightLine->setText(QString::number(activeEdge->getWeight()));
+    edgeOutWLine->setText(QString::number(activeEdge->getOutWeight()));
 
     int sourcepos=sourceNodes2->findText(activeEdge->getSource());
     int destpos=destNodes2->findText(activeEdge->getDest());
@@ -407,61 +412,61 @@ void MainWindow::hideEditEdge()
 /*set new weight for selected edge*/
 void MainWindow::setEdgeWeight()
 {
-    if(edgeWeightLine->text()!="")
+    if((edgeWeightLine->text() != "") && (edgeOutWLine->text() != ""))
     {
-        QString item=" "+activeEdge->getSource();
-        if(activeEdge->getDirection()==SOURCE_TO_DEST)
-        {
-            item+=" -> ";
-        }
-        else if(activeEdge->getDirection()==DEST_TO_SOURCE)
-        {
-            item+=" <- ";
-        }
-        else if(activeEdge->getDirection()==TWO_WAY)
-        {
-            item+=" <-> ";
-        }
-        item+=activeEdge->getDest()+" Input marker: "+edgeWeightLine->text();
+        QString item = " " + activeEdge->getSource();
+        if(activeEdge->getDirection() == SOURCE_TO_DEST)
+            item += " -> ";
+        else if(activeEdge->getDirection() == DEST_TO_SOURCE)
+            item += " <- ";
+        else if(activeEdge->getDirection() == TWO_WAY)
+            item += " <-> ";
+
+        item += activeEdge->getDest() + " Markers: " + edgeWeightLine->text() + " : " + edgeOutWLine->text();
 
         edgesTable->currentItem()->setText(item);
         activeEdge->setWeight(edgeWeightLine->text().toInt());
+        activeEdge->setOutWeight(edgeOutWLine->text().toInt());
     }
-    else
+    else if (edgeWeightLine->text() == "")
         error("Type input marker first!");
+    else
+        error("Type output marker first!");
 }
 
 /*set new source for selected edge*/
 void MainWindow::setEdgeSource()
 {
-    for(int i=0;i<edgesTable->count();i++)
+    for(int i = 0; i < edgesTable->count(); i++)
     {
-        QString text=edgesTable->item(i)->text();
+        QString text = edgesTable->item(i)->text();
         QStringList list = text.split(" ");
         QString source = list.at(1);
         QString dest = list.at(3);
-        if(source==sourceNodes2->currentText()&&destNodes2->currentText()==dest)
+
+        if(source == sourceNodes2->currentText() && destNodes2->currentText() == dest)
         {
             error("There already is edge between selected nodes!");
             return;
         }
-        if(dest==sourceNodes2->currentText()&&destNodes2->currentText()==source)
+        if(dest == sourceNodes2->currentText() && destNodes2->currentText() == source)
         {
             error("There already is edge between selected nodes!");
             return;
         }
     }
 
-    Node *dest=activeEdge->getDestNode();
-    int weight=activeEdge->getWeight();
-    Direction dir=activeEdge->getDirection();
+    Node *dest = activeEdge->getDestNode();
+    int weight = activeEdge->getWeight();
+    int outWeight = activeEdge->getOutWeight();
+    Direction dir = activeEdge->getDirection();
 
     QListWidgetItem* item = edgesTable->currentItem();
     delete item;
 
     delete activeEdge;
 
-    graphic->getMngr()->addItem(new Edge(graphic->getMngr()->getNodeByName(sourceNodes2->currentText()),dest,weight,dir,graphic));
+    graphic->getMngr()->addItem(new Edge(graphic->getMngr()->getNodeByName(sourceNodes2->currentText()), dest, weight, outWeight, dir, graphic));
     graphic->scene()->addItem(graphic->getMngr()->getLastEdge());
     activeEdge=graphic->getMngr()->getLastEdge();
 }
@@ -469,36 +474,37 @@ void MainWindow::setEdgeSource()
 /*set new destination for selected edge*/
 void MainWindow::setEdgeDest()
 {
-    for(int i=0;i<edgesTable->count();i++){
+    for(int i = 0; i < edgesTable->count(); i++){
 
-        QString text=edgesTable->item(i)->text();
+        QString text = edgesTable->item(i)->text();
         QStringList list = text.split(" ");
         QString source = list.at(1);
         QString dest = list.at(3);
-        if(source==sourceNodes2->currentText()&&destNodes2->currentText()==dest)
+        if(source == sourceNodes2->currentText() && destNodes2->currentText() == dest)
         {
             error("There already is edge between selected nodes!");
             return;
         }
-        if(dest==sourceNodes2->currentText()&&destNodes2->currentText()==source)
+        if(dest == sourceNodes2->currentText() && destNodes2->currentText() == source)
         {
             error("There already is edge between selected nodes!");
             return;
         }
     }
 
-    Node *source=activeEdge->getSourceNode();
-    int weight=activeEdge->getWeight();
-    Direction dir=activeEdge->getDirection();
+    Node *source = activeEdge->getSourceNode();
+    int weight = activeEdge->getWeight();
+    int outWeight = activeEdge->getOutWeight();
+    Direction dir = activeEdge->getDirection();
 
     QListWidgetItem* item = edgesTable->currentItem();
     delete item;
 
     delete activeEdge;
 
-    graphic->getMngr()->addItem(new Edge(source,graphic->getMngr()->getNodeByName(destNodes2->currentText()),weight,dir,graphic));
+    graphic->getMngr()->addItem(new Edge(source, graphic->getMngr()->getNodeByName(destNodes2->currentText()), weight, outWeight, dir, graphic));
     graphic->scene()->addItem(graphic->getMngr()->getLastEdge());
-    activeEdge=graphic->getMngr()->getLastEdge();
+    activeEdge = graphic->getMngr()->getLastEdge();
 }
 
 /*set new direction for selected edge*/
@@ -510,7 +516,7 @@ void MainWindow::setEdgeDirection()
 /*select edge*/
 void MainWindow::setActiveEdge(Edge *e)
 {
-    activeEdge=e;
+    activeEdge = e;
 }
 
 /*create selector (for selecting node or edge and adding node or edge)*/
@@ -581,6 +587,10 @@ void MainWindow::createSelector()
     addEdgeWeight=new QLineEdit();
     addEdgeWeight->setValidator( new QIntValidator(0,100));
     layout2->addWidget(addEdgeWeight);
+    layout2->addWidget(new QLabel("Output Marker: "));
+    addEdgeOutW=new QLineEdit();
+    addEdgeOutW->setValidator( new QIntValidator(0,100));
+    layout2->addWidget(addEdgeOutW);
     newEdgeButton=new QPushButton("Add new edge..");
     connect(newEdgeButton, SIGNAL (released()), this, SLOT(addEdge()));
     layout2->addWidget(newEdgeButton);
@@ -602,16 +612,32 @@ void MainWindow::createEdgeTable()
     edgeTable->setMovable(false);
     edgeTable->addSeparator();
 
-    edgeTable->addWidget(new QLabel("Marker table:"));
+    edgeTable->addWidget(new QLabel("Input marker table:"));
     markerTable=new QTableWidget();
     markerTable->setMaximumWidth(250);
-    markerTable->setMaximumHeight(250);
+    markerTable->setMaximumHeight(450);
     markerTable->setColumnCount(2);
     markerTable->horizontalHeader()->setStretchLastSection(true);
+    markerTable->verticalHeader()->setResizeContentsPrecision(QHeaderView::ResizeToContents);
     markerTable->showGrid();
 
-    markerTable->setHorizontalHeaderLabels(QStringList() << trUtf8("Input marker")
-                                                         << trUtf8("Verbal description"));
+    markerTable->setHorizontalHeaderLabels(QStringList() << "Input marker"
+                                                         << "Description");
+
+    for (int i = 0; i < edgesTable->count(); i++)
+    {
+        markerTable->insertRow(i);
+        markerTable->setItem(i, 0, new QTableWidgetItem(QString("%1").arg(addEdgeWeight->text().toInt())));
+//        Weight.push_back({});
+    }
+
+//    int i = 0;
+//    foreach(Edge *e,graphic->getMngr()->getEdges())
+//    {
+//        markerTable->insertRow(i);
+//        markerTable->setItem(i++, 0, new QTableWidgetItem(QString("%2").arg(e->getWeight())));
+//    }
+
 
 
 
@@ -619,7 +645,32 @@ void MainWindow::createEdgeTable()
     edgeTable->addWidget(markerTable);
     edgeTable->addSeparator();
 
-    hideEdgeTable();
+    edgeTable->addWidget(new QLabel("Output marker table:"));
+    markerTable=new QTableWidget();
+    markerTable->setMaximumWidth(250);
+    markerTable->setMaximumHeight(450);
+    markerTable->setColumnCount(2);
+    markerTable->horizontalHeader()->setStretchLastSection(true);
+    markerTable->showGrid();
+
+    markerTable->setHorizontalHeaderLabels(QStringList() << "Ouput marker"
+                                                         << "Description");
+
+    for (int i = 0; i < 15; i++)
+    {
+        markerTable->insertRow(i);
+    }
+//    connect(markerTable, SIGNAL(itemPressed(QListWidgetItem *)), this, SLOT(nodeItemClicked(QListWidgetItem *)));
+    edgeTable->addWidget(markerTable);
+    edgeTable->addSeparator();
+
+//    hideEdgeTable();
+}
+
+void MainWindow::deleteEdgeTable()
+{
+    delete markerTable;
+    delete edgeTable;
 }
 
 /*show selector*/
@@ -663,35 +714,41 @@ void MainWindow::addNode()
 /*add new edge to graph (from panel)*/
 void MainWindow::addEdge()
 {
-    if(addEdgeWeight->text()=="")
-    {
+    if(addEdgeWeight->text() == "")
         error("Type input marker first!");
-    }
+
+    if(addEdgeOutW->text() == "")
+        error("Type output marker first!");
+
     else
     {
-        for(int i=0;i<edgesTable->count();i++)
+        for(int i = 0; i < edgesTable->count(); i++)
         {
-            QString text=edgesTable->item(i)->text();
+            QString text = edgesTable->item(i)->text();
             QStringList list = text.split(" ");
             QString source = list.at(1);
             QString dest = list.at(3);
-            if(source==sourceNodes->currentText()&&destNodes->currentText()==dest)
+            if(source == sourceNodes->currentText() && destNodes->currentText() == dest)
             {
                 error("There already is edge between selected nodes!");
                 return;
             }
-            if(dest==sourceNodes->currentText()&&destNodes->currentText()==source)
+            if(dest == sourceNodes->currentText() && destNodes->currentText() == source)
             {
                 error("There already is edge between selected nodes!");
                 return;
             }
         }
 
-        Node *s=graphic->getMngr()->getNodeByName(sourceNodes->currentText());
-        Node *d=graphic->getMngr()->getNodeByName(destNodes->currentText());
-        Direction dir=static_cast<Direction>(directionOfEdge->currentText().toInt());
-        int weight=addEdgeWeight->text().toInt();
-        graphic->addEdge(s,d,weight,dir);
+        Node *s = graphic->getMngr()->getNodeByName(sourceNodes->currentText());
+        Node *d = graphic->getMngr()->getNodeByName(destNodes->currentText());
+        Direction dir = static_cast<Direction>(directionOfEdge->currentText().toInt());
+        int weight = addEdgeWeight->text().toInt();
+        int outW = addEdgeOutW->text().toInt();
+        graphic->addEdge(s, d, weight, outW, dir);
+
+        deleteEdgeTable();
+        createEdgeTable();
     }
 }
 
@@ -710,21 +767,24 @@ void MainWindow::addNode(Node *n)
 /*add new edge to edges list (when graph is loaded from file)*/
 void MainWindow::addEdge(Edge *e)
 {
-    QString item=" "+e->getSource();
-    if(e->getDirection()==SOURCE_TO_DEST)
+    QString item = " " + e->getSource();
+    if(e->getDirection() == SOURCE_TO_DEST)
     {
-        item+=" -> ";
+        item += " -> ";
     }
-    else if(e->getDirection()==DEST_TO_SOURCE)
+    else if(e->getDirection() == DEST_TO_SOURCE)
     {
-        item+=" <- ";
+        item += " <- ";
     }
-    else if(e->getDirection()==TWO_WAY)
+    else if(e->getDirection() == TWO_WAY)
     {
-        item+=" <-> ";
+        item += " <-> ";
     }
-    item+=e->getDest()+" Input marker: "+e->getWeight();
+    item += e->getDest() + " Markers: " + e->getWeight() + " : " + e->getOutWeight();
     edgesTable->addItem(new QListWidgetItem(item));
+
+    deleteEdgeTable();
+    createEdgeTable();
 }
 
 /*remove node*/
@@ -746,6 +806,10 @@ void MainWindow::removeNode()
     destNodes2->removeItem(pos);
 
     activeNode->removeThis();
+
+    deleteEdgeTable();
+    createEdgeTable();
+
     hideEditNode();
 }
 
@@ -754,32 +818,39 @@ void MainWindow::removeEdge()
 {
     delete edgesTable->currentItem();
     activeEdge->removeThis();
+
+    deleteEdgeTable();
+    createEdgeTable();
+
     hideEditEdge();
 }
 
 /*remove edge*/
 void MainWindow::removeEdge(Edge *e)
 {
-    QString sourceNode=e->getSource();
-    QString destNode=e->getDest();
+    QString sourceNode = e->getSource();
+    QString destNode = e->getDest();
 
-    for(int i=0;i<edgesTable->count();i++)
+    for(int i = 0; i < edgesTable->count(); i++)
     {
-        QString text=edgesTable->item(i)->text();
+        QString text = edgesTable->item(i)->text();
         QStringList list = text.split(" ");
         QString source = list.at(1);
         QString dest = list.at(3);
-        if(source==sourceNode && destNode==dest)
+        if(source == sourceNode && destNode == dest)
         {
             delete edgesTable->item(i);
             continue;
         }
-        if(dest==sourceNode && destNode==source)
+        if(dest == sourceNode && destNode == source)
         {
             delete edgesTable->item(i);
             continue;
         }
     }
+
+    deleteEdgeTable();
+    createEdgeTable();
 }
 
 /*select active node*/
