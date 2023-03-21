@@ -435,6 +435,12 @@ void MainWindow::setEdgeWeight()
         edgesTable->currentItem()->setText(item);
         activeEdge->setWeight(edgeWeightLine->text().toInt());
         activeEdge->setOutWeight(edgeOutWLine->text().toInt());
+
+        WeightIn[activeEdge->getSource() + " " + activeEdge->getDest()] = edgeWeightLine->text().toInt();
+        WeightOut[activeEdge->getSource() + " " + activeEdge->getDest()] = edgeOutWLine->text().toInt();
+
+        deleteEdgeTable();
+        createEdgeTable();
     }
     else if (edgeWeightLine->text() == "")
         error("Type input marker first!");
@@ -476,7 +482,9 @@ void MainWindow::setEdgeSource()
 
     graphic->getMngr()->addItem(new Edge(graphic->getMngr()->getNodeByName(sourceNodes2->currentText()), dest, weight, outWeight, dir, graphic));
     graphic->scene()->addItem(graphic->getMngr()->getLastEdge());
-    activeEdge=graphic->getMngr()->getLastEdge();
+    activeEdge = graphic->getMngr()->getLastEdge();
+
+    WeightIn.insert({sourceNodes2->currentText() + " " + dest->getName(), weight});
 
     deleteEdgeTable();
     createEdgeTable();
@@ -517,6 +525,9 @@ void MainWindow::setEdgeDest()
     graphic->getMngr()->addItem(new Edge(source, graphic->getMngr()->getNodeByName(destNodes2->currentText()), weight, outWeight, dir, graphic));
     graphic->scene()->addItem(graphic->getMngr()->getLastEdge());
     activeEdge = graphic->getMngr()->getLastEdge();
+
+    WeightIn.insert({source->getName() + " " + destNodes2->currentText(), weight});
+    WeightOut.insert({source->getName() + " " + destNodes2->currentText(), outWeight});
 
     deleteEdgeTable();
     createEdgeTable();
