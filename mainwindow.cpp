@@ -32,6 +32,8 @@ MainWindow::MainWindow()
     createEdgeTable();
     createEditNode();
     createEditEdge();
+
+    hideEdgeTable();
 }
 
 /*file->new*/
@@ -469,6 +471,10 @@ void MainWindow::setEdgeSource()
     graphic->getMngr()->addItem(new Edge(graphic->getMngr()->getNodeByName(sourceNodes2->currentText()), dest, weight, outWeight, dir, graphic));
     graphic->scene()->addItem(graphic->getMngr()->getLastEdge());
     activeEdge=graphic->getMngr()->getLastEdge();
+
+    deleteEdgeTable();
+    createEdgeTable();
+    showEdgeTable();
 }
 
 /*set new destination for selected edge*/
@@ -505,6 +511,10 @@ void MainWindow::setEdgeDest()
     graphic->getMngr()->addItem(new Edge(source, graphic->getMngr()->getNodeByName(destNodes2->currentText()), weight, outWeight, dir, graphic));
     graphic->scene()->addItem(graphic->getMngr()->getLastEdge());
     activeEdge = graphic->getMngr()->getLastEdge();
+
+    deleteEdgeTable();
+    createEdgeTable();
+    showEdgeTable();
 }
 
 /*set new direction for selected edge*/
@@ -627,7 +637,7 @@ void MainWindow::createEdgeTable()
     for (int i = 0; i < edgesTable->count(); i++)
     {
         markerTable->insertRow(i);
-        markerTable->setItem(i, 0, new QTableWidgetItem(QString("%1").arg(addEdgeWeight->text().toInt())));
+        markerTable->setItem(i, 0, new QTableWidgetItem(QString("%1").arg(addEdgeWeight->text())));
 //        Weight.push_back({});
     }
 
@@ -664,7 +674,7 @@ void MainWindow::createEdgeTable()
     edgeTable->addWidget(markerTable);
     edgeTable->addSeparator();
 
-//    hideEdgeTable();
+    hideEdgeTable();
 }
 
 void MainWindow::deleteEdgeTable()
@@ -749,6 +759,7 @@ void MainWindow::addEdge()
 
         deleteEdgeTable();
         createEdgeTable();
+        showEdgeTable();
     }
 }
 
@@ -780,11 +791,12 @@ void MainWindow::addEdge(Edge *e)
     {
         item += " <-> ";
     }
-    item += e->getDest() + " Markers: " + e->getWeight() + " : " + e->getOutWeight();
+    item += e->getDest() + " Markers: " + QString::number(e->getWeight()) + " : " + QString::number(e->getOutWeight());
     edgesTable->addItem(new QListWidgetItem(item));
 
     deleteEdgeTable();
     createEdgeTable();
+    showEdgeTable();
 }
 
 /*remove node*/

@@ -141,7 +141,8 @@ private:
     QPushButton *newEdgeButton;
     QPushButton *removeEdgeButton;
 
-    std::vector<std::pair<int, int>> Weight;
+    std::vector<std::pair<QString, int>> WeightIn;
+    std::vector<std::pair<QString, int>> WeightOut;
 };
 
 #endif // MAINWINDOW_H
