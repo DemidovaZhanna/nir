@@ -59,6 +59,9 @@ private slots:
     void setEdgeDest();
     void setEdgeDirection();
 
+    void setEdgeDescrIn();
+    void setEdgeDescrOut();
+
     void showSelector();
     void hideSelector();
     void addNode();
@@ -124,6 +127,8 @@ private:
     //edgeTable
     QToolBar *edgeTable;
     QTableWidget *markerTable;
+    QPushButton *edgenewWeightSet;
+    QPushButton *edgenewWOutSet;
     //node add panel
     QGroupBox *nodeAddPanel;
     QLineEdit *addNodeName;

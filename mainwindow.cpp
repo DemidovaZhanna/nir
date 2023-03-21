@@ -540,6 +540,16 @@ void MainWindow::setEdgeDirection()
     activeEdge->setDirection(static_cast<Direction>(dir2->currentIndex()));
 }
 
+void MainWindow::setEdgeDescrIn()
+{
+
+}
+
+void MainWindow::setEdgeDescrOut()
+{
+
+}
+
 /*select edge*/
 void MainWindow::setActiveEdge(Edge *e)
 {
@@ -648,6 +658,11 @@ void MainWindow::createEdgeTable()
     markerTable->verticalHeader()->setResizeContentsPrecision(QHeaderView::ResizeToContents);
     markerTable->showGrid();
 
+    edgenewWeightSet = new QPushButton("Set");
+    edgenewWOutSet = new QPushButton("Set");
+    connect(edgenewWeightSet, SIGNAL (released()), this, SLOT(setEdgeDescrIn()));
+    connect(edgenewWOutSet, SIGNAL (released()), this, SLOT(setEdgeDescrOut()));
+
     markerTable->setHorizontalHeaderLabels(QStringList() << "Input marker"
                                                          << "Description");
 
@@ -655,10 +670,18 @@ void MainWindow::createEdgeTable()
     for (auto itr = WeightIn.begin(); itr != WeightIn.end(); itr++)
     {
         markerTable->insertRow(i);
+        QComboBox *comboBox = new QComboBox();
+
+        comboBox->insertItem(0, QString("SOURCE_TO_DEST"));
+        comboBox->insertItem(1, QString("DEST_TO_SOURCE"));
+
+        markerTable->setCellWidget(i, 1, comboBox);
+
         markerTable->setItem(i++, 0, new QTableWidgetItem(QString("%1").arg(itr->second)));
     }
 
     edgeTable->addWidget(markerTable);
+    edgeTable->addWidget(edgenewWeightSet);
     edgeTable->addSeparator();
 
     edgeTable->addWidget(new QLabel("Output marker table:"));
@@ -680,6 +703,7 @@ void MainWindow::createEdgeTable()
     }
 
     edgeTable->addWidget(markerTable);
+    edgeTable->addWidget(edgenewWOutSet);
     edgeTable->addSeparator();
 
     hideEdgeTable();
