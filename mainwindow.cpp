@@ -180,6 +180,12 @@ void MainWindow::clearAll()
 
     if(destNodes->count() > 0)
         destNodes->clear();
+
+    if(WeightIn.size() > 0)
+        WeightIn.clear();
+
+    if(WeightOut.size() > 0)
+        WeightOut.clear();
 }
 
 /*create node editor*/
@@ -634,24 +640,13 @@ void MainWindow::createEdgeTable()
     markerTable->setHorizontalHeaderLabels(QStringList() << "Input marker"
                                                          << "Description");
 
-    for (int i = 0; i < edgesTable->count(); i++)
+    int i = 0;
+    for (auto itr = WeightIn.begin(); itr != WeightIn.end(); itr++)
     {
         markerTable->insertRow(i);
-        markerTable->setItem(i, 0, new QTableWidgetItem(QString("%1").arg(addEdgeWeight->text())));
-//        Weight.push_back({});
+        markerTable->setItem(i++, 0, new QTableWidgetItem(QString("%1").arg(itr->second)));
     }
 
-//    int i = 0;
-//    foreach(Edge *e,graphic->getMngr()->getEdges())
-//    {
-//        markerTable->insertRow(i);
-//        markerTable->setItem(i++, 0, new QTableWidgetItem(QString("%2").arg(e->getWeight())));
-//    }
-
-
-
-
-//    connect(markerTable, SIGNAL(itemPressed(QListWidgetItem *)), this, SLOT(nodeItemClicked(QListWidgetItem *)));
     edgeTable->addWidget(markerTable);
     edgeTable->addSeparator();
 
@@ -666,11 +661,13 @@ void MainWindow::createEdgeTable()
     markerTable->setHorizontalHeaderLabels(QStringList() << "Ouput marker"
                                                          << "Description");
 
-    for (int i = 0; i < 15; i++)
+    int o = 0;
+    for (auto itr = WeightOut.begin(); itr != WeightOut.end(); itr++)
     {
-        markerTable->insertRow(i);
+        markerTable->insertRow(o);
+        markerTable->setItem(o++, 0, new QTableWidgetItem(QString("%1").arg(itr->second)));
     }
-//    connect(markerTable, SIGNAL(itemPressed(QListWidgetItem *)), this, SLOT(nodeItemClicked(QListWidgetItem *)));
+
     edgeTable->addWidget(markerTable);
     edgeTable->addSeparator();
 
@@ -708,13 +705,13 @@ void MainWindow::hideEdgeTable()
 /*add new node to graph (from panel)*/
 void MainWindow::addNode()
 {
-    if(sourceNodes->findText(addNodeName->text())==-1 && addNodeWeight->text()!="" && addNodeName->text()!="")
-        graphic->addNode(addNodeName->text(),addNodeWeight->text().toInt(), addNodeDesc->text());
-    else if(addNodeWeight->text()=="")
+    if(sourceNodes->findText(addNodeName->text()) == -1 && addNodeWeight->text() != "" && addNodeName->text() != "")
+        graphic->addNode(addNodeName->text(), addNodeWeight->text().toInt(), addNodeDesc->text());
+    else if(addNodeWeight->text() == "")
         error("Type weight first!");
-    else if(addNodeName->text()=="")
+    else if(addNodeName->text() == "")
         error("Type name first!");
-    else if(addNodeDesc->text()=="")
+    else if(addNodeDesc->text() == "")
         error("Type description first!");
 
     else
@@ -757,6 +754,9 @@ void MainWindow::addEdge()
         int outW = addEdgeOutW->text().toInt();
         graphic->addEdge(s, d, weight, outW, dir);
 
+        WeightIn.insert({sourceNodes->currentText() + " " + destNodes->currentText(), weight});
+        WeightOut.insert({sourceNodes->currentText() + " " + destNodes->currentText(), outW});
+
         deleteEdgeTable();
         createEdgeTable();
         showEdgeTable();
@@ -766,7 +766,7 @@ void MainWindow::addEdge()
 /*add new node to nodes list (when graph is loaded from file)*/
 void MainWindow::addNode(Node *n)
 {
-    QString item=" Name: " +n->getName()+" State: "+QString::number(n->getWeight());
+    QString item=" Name: " + n->getName() + " State: " + QString::number(n->getWeight());
 
     nodesTable->addItem(new QListWidgetItem(item));
     sourceNodes->addItem(QString(n->getName()));
@@ -794,6 +794,9 @@ void MainWindow::addEdge(Edge *e)
     item += e->getDest() + " Markers: " + QString::number(e->getWeight()) + " : " + QString::number(e->getOutWeight());
     edgesTable->addItem(new QListWidgetItem(item));
 
+    WeightIn.insert({e->getSource() + " " + e->getDest(), e->getWeight()});
+    WeightOut.insert({e->getSource() + " " + e->getDest(), e->getOutWeight()});
+
     deleteEdgeTable();
     createEdgeTable();
     showEdgeTable();
@@ -802,25 +805,26 @@ void MainWindow::addEdge(Edge *e)
 /*remove node*/
 void MainWindow::removeNode()
 {
-    QString name=nodesTable->currentItem()->text().split(" ").at(2);
+    QString name = nodesTable->currentItem()->text().split(" ").at(2);
     delete nodesTable->currentItem();
 
-    int pos=sourceNodes->findText(name);
+    int pos = sourceNodes->findText(name);
     sourceNodes->removeItem(pos);
 
-    pos=destNodes->findText(name);
+    pos = destNodes->findText(name);
     destNodes->removeItem(pos);
 
-    pos=sourceNodes2->findText(name);
+    pos = sourceNodes2->findText(name);
     sourceNodes2->removeItem(pos);
 
-    pos=destNodes2->findText(name);
+    pos = destNodes2->findText(name);
     destNodes2->removeItem(pos);
 
     activeNode->removeThis();
 
     deleteEdgeTable();
     createEdgeTable();
+    showEdgeTable();
 
     hideEditNode();
 }
@@ -833,6 +837,7 @@ void MainWindow::removeEdge()
 
     deleteEdgeTable();
     createEdgeTable();
+    showEdgeTable();
 
     hideEditEdge();
 }
@@ -849,20 +854,18 @@ void MainWindow::removeEdge(Edge *e)
         QStringList list = text.split(" ");
         QString source = list.at(1);
         QString dest = list.at(3);
-        if(source == sourceNode && destNode == dest)
+        if((source == sourceNode && destNode == dest) || (dest == sourceNode && destNode == source))
         {
             delete edgesTable->item(i);
-            continue;
-        }
-        if(dest == sourceNode && destNode == source)
-        {
-            delete edgesTable->item(i);
+            WeightIn.erase(source + " " + dest);
+            WeightOut.erase(source + " " + dest);
             continue;
         }
     }
 
     deleteEdgeTable();
     createEdgeTable();
+    showEdgeTable();
 }
 
 /*select active node*/
@@ -874,7 +877,7 @@ void MainWindow::nodeItemClicked(QListWidgetItem *item)
     QStringList list = item->text().split(" ");
     QString name = list.at(2);
 
-    activeNode=graph->getNodeByName(name);
+    activeNode = graph->getNodeByName(name);
     activeNode->selectThis();
     activeNode->update();
 }
@@ -889,7 +892,7 @@ void MainWindow::edgeItemClicked(QListWidgetItem *item)
     QString source = list.at(1);
     QString dest = list.at(3);
 
-    activeEdge=graph->getEdgeBySourceDest(source,dest);
+    activeEdge = graph->getEdgeBySourceDest(source,dest);
     activeEdge->select();
     activeEdge->update();
 }
