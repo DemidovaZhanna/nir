@@ -91,7 +91,7 @@ void MainWindow::save()
     }
 
     QTextStream out(&file);
-    GraphManager *graph=graphic->getMngr();
+    GraphManager *graph = graphic->getMngr();
 
     out<<"NODES\n";
     foreach(Node *n,graph->getNodes()){
@@ -107,6 +107,32 @@ void MainWindow::save()
            <<e->getOutWeight()<<" "
            <<QString::number(static_cast<int>(e->getDirection()))<<"\n";
     }
+}
+
+void MainWindow::translate()
+{
+    QString directory = QFileDialog::getSaveFileName(this,tr("Save.."),"/home/zhanna/temp",tr("Graph files(*.doc)"));
+    if(directory.isEmpty())
+        return;
+
+    QFile file(directory);
+    if(!file.open(QIODevice::WriteOnly | QIODevice::Text)){
+        error("Problems opening a file");
+        return;
+    }
+
+    QTextStream out(&file);
+
+    int event;
+    for (int i = 1; i <= nodesTable->count(); i++)
+    {
+        auto val = WeightIn.find(QString::number(1) + " " + QString::number(i));
+        if (val != WeightIn.end())
+            event = val->second;
+    }
+
+    out << trUtf8("Событие ") << _descrIn.at(event - 1) << "\n";
+
 }
 
 /*connect menu buttons with actions*/
@@ -127,6 +153,11 @@ void MainWindow::createActions()
     saveAct->setStatusTip(tr("Save the document to disk"));
     connect(saveAct, &QAction::triggered, this, &MainWindow::save);
 
+    translateAct = new QAction(tr("&Translate"), this);
+    translateAct->setShortcut(QKeySequence::SaveAs);
+    translateAct->setStatusTip(tr("Translate into a special language"));
+    connect(translateAct, &QAction::triggered, this, &MainWindow::translate);
+
     exitAct = new QAction(tr("&Exit"), this);
     exitAct->setShortcuts(QKeySequence::Quit);
     exitAct->setStatusTip(tr("Exit the application"));
@@ -140,6 +171,7 @@ void MainWindow::createMenus()
     fileMenu->addAction(newAct);
     fileMenu->addAction(openAct);
     fileMenu->addAction(saveAct);
+    fileMenu->addAction(translateAct);
     fileMenu->addSeparator();
     fileMenu->addAction(exitAct);
 }
@@ -255,7 +287,7 @@ void MainWindow::setNodeName()
     if(sourceNodes->findText(nodeNameLine->text())==-1)
     {
         QString oldName=activeNode->getName();
-        nodesTable->currentItem()->setText(" Number: "+nodeNameLine->text()+" State: "+QString::number(activeNode->getWeight()));
+        nodesTable->currentItem()->setText(" Number: "+nodeNameLine->text()+" State: "+ QString::number(activeNode->getWeight()));
         activeNode->setName(nodeNameLine->text());
 
         int pos=sourceNodes->findText(oldName);
@@ -278,7 +310,7 @@ void MainWindow::setNodeName()
         {
             QListWidgetItem *item=edgesTable->item(i);
             QString text=item->text();
-            text.replace(" "+oldName+" "," "+activeNode->getName()+" ");
+            text.replace(" "+ oldName + " ", " " + activeNode->getName() + " ");
             item->setText(text);
         }
 
@@ -542,6 +574,7 @@ void MainWindow::setEdgeDirection()
 
 void MainWindow::setEdgeDescrIn()
 {
+//    activeEdge->setWeight(static_cast<_WeightIn>(labelweight->currentIndex()));
 
 }
 
@@ -651,59 +684,96 @@ void MainWindow::createEdgeTable()
 
     edgeTable->addWidget(new QLabel("Input marker table:"));
     markerTable=new QTableWidget();
-    markerTable->setMaximumWidth(250);
-    markerTable->setMaximumHeight(450);
-    markerTable->setColumnCount(2);
+    markerTable->setMaximumWidth(300);
+    markerTable->setMaximumHeight(475);
+    markerTable->setColumnCount(1);
     markerTable->horizontalHeader()->setStretchLastSection(true);
     markerTable->verticalHeader()->setResizeContentsPrecision(QHeaderView::ResizeToContents);
     markerTable->showGrid();
 
-    edgenewWeightSet = new QPushButton("Set");
-    edgenewWOutSet = new QPushButton("Set");
-    connect(edgenewWeightSet, SIGNAL (released()), this, SLOT(setEdgeDescrIn()));
-    connect(edgenewWOutSet, SIGNAL (released()), this, SLOT(setEdgeDescrOut()));
+//    edgenewWeightSet = new QPushButton("Set");
+//    edgenewWOutSet = new QPushButton("Set");
+//    connect(edgenewWeightSet, SIGNAL (released()), this, SLOT(setEdgeDescrIn()));
+//    connect(edgenewWOutSet, SIGNAL (released()), this, SLOT(setEdgeDescrOut()));
 
-    markerTable->setHorizontalHeaderLabels(QStringList() << "Input marker"
-                                                         << "Description");
+    markerTable->setHorizontalHeaderLabels(QStringList() << "Description");
 
-    int i = 0;
-    for (auto itr = WeightIn.begin(); itr != WeightIn.end(); itr++)
+//    int i = 0;
+//    for (auto itr = WeightIn.begin(); itr != WeightIn.end(); itr++)
+//    {
+//        markerTable->insertRow(i);
+
+//        labelweight = new QComboBox();
+
+//        labelweight->insertItem(0, QString("T_CONNECT.REQ"));
+//        labelweight->insertItem(1, QString("RECONNECT"));
+//        labelweight->insertItem(2, QString("STOP_TRY_RECONNECT"));
+//        labelweight->insertItem(3, QString("N_CONNECT.CONF"));
+//        labelweight->insertItem(4, QString("T_DATA.REQ"));
+//        labelweight->insertItem(5, QString("RESEND"));
+//        labelweight->insertItem(6, QString("STOP_TRY_RESEND"));
+//        labelweight->insertItem(7, QString("N_DATA.IND (disconnect)"));
+//        labelweight->insertItem(8, QString("N_CONNECT.IND"));
+//        labelweight->insertItem(9, QString("T_CONNECT.RESP"));
+//        labelweight->insertItem(10, QString("N_DATA.IND"));
+//        labelweight->insertItem(11, QString("T_DISCONNECT.REQ"));
+//        labelweight->insertItem(12, QString("REDISCONNECT"));
+//        labelweight->insertItem(13, QString("N_DISCONNECT.IND"));
+//        labelweight->insertItem(14, QString("STOP_TRY_REDISCONNECT"));
+
+//        markerTable->setCellWidget(i, 1, labelweight);
+
+//        markerTable->setItem(i++, 0, new QTableWidgetItem(QString("%1").arg(itr->second)));
+//    }
+
+    for (int i = 0; i < 15; i++)
     {
         markerTable->insertRow(i);
-        QComboBox *comboBox = new QComboBox();
-
-        comboBox->insertItem(0, QString("SOURCE_TO_DEST"));
-        comboBox->insertItem(1, QString("DEST_TO_SOURCE"));
-
-        markerTable->setCellWidget(i, 1, comboBox);
-
-        markerTable->setItem(i++, 0, new QTableWidgetItem(QString("%1").arg(itr->second)));
+        markerTable->setItem(i, 0, new QTableWidgetItem(_descrIn.at(i)));
     }
 
     edgeTable->addWidget(markerTable);
-    edgeTable->addWidget(edgenewWeightSet);
+//    edgeTable->addWidget(edgenewWeightSet);
     edgeTable->addSeparator();
 
     edgeTable->addWidget(new QLabel("Output marker table:"));
     markerTable=new QTableWidget();
-    markerTable->setMaximumWidth(250);
-    markerTable->setMaximumHeight(450);
-    markerTable->setColumnCount(2);
+    markerTable->setMaximumWidth(350);
+    markerTable->setMaximumHeight(300);
+    markerTable->setColumnCount(1);
     markerTable->horizontalHeader()->setStretchLastSection(true);
     markerTable->showGrid();
 
-    markerTable->setHorizontalHeaderLabels(QStringList() << "Ouput marker"
-                                                         << "Description");
+    markerTable->setHorizontalHeaderLabels(QStringList() << "Description");
 
-    int o = 0;
-    for (auto itr = WeightOut.begin(); itr != WeightOut.end(); itr++)
+//    int o = 0;
+//    for (auto itr = WeightOut.begin(); itr != WeightOut.end(); itr++)
+//    {
+//        markerTable->insertRow(o);
+//        QComboBox *comboBox = new QComboBox();
+
+//        comboBox->insertItem(0, QString("N_CONNECT.REQ"));
+//        comboBox->insertItem(1, QString("N_DISCONNECT.REQ"));
+//        comboBox->insertItem(2, QString("T_DISCONNECT.IND"));
+//        comboBox->insertItem(3, QString("T_CONNECT.CONF"));
+//        comboBox->insertItem(4, QString("N_DATA.REQ"));
+//        comboBox->insertItem(5, QString("T_CONNECT.IND"));
+//        comboBox->insertItem(6, QString("N_CONNECT.RESP"));
+//        comboBox->insertItem(7, QString("T_DATA.IND"));
+//        comboBox->insertItem(8, QString("N_DATA.REQ (disconnect)"));
+//        markerTable->setCellWidget(o, 1, comboBox);
+
+//        markerTable->setItem(o++, 0, new QTableWidgetItem(QString("%1").arg(itr->second)));
+//    }
+
+    for (int i = 0; i < 9; i++)
     {
-        markerTable->insertRow(o);
-        markerTable->setItem(o++, 0, new QTableWidgetItem(QString("%1").arg(itr->second)));
+        markerTable->insertRow(i);
+        markerTable->setItem(i, 0, new QTableWidgetItem(_descrOut.at(i)));
     }
 
     edgeTable->addWidget(markerTable);
-    edgeTable->addWidget(edgenewWOutSet);
+//    edgeTable->addWidget(edgenewWOutSet);
     edgeTable->addSeparator();
 
     hideEdgeTable();
@@ -868,6 +938,10 @@ void MainWindow::removeNode()
 void MainWindow::removeEdge()
 {
     delete edgesTable->currentItem();
+
+    WeightIn.erase(activeEdge->getSource() + " " + activeEdge->getDest());
+    WeightOut.erase(activeEdge->getSource() + " " + activeEdge->getDest());
+
     activeEdge->removeThis();
 
     deleteEdgeTable();
@@ -894,13 +968,14 @@ void MainWindow::removeEdge(Edge *e)
             delete edgesTable->item(i);
             WeightIn.erase(source + " " + dest);
             WeightOut.erase(source + " " + dest);
+
+            deleteEdgeTable();
+            createEdgeTable();
+            showEdgeTable();
+
             continue;
         }
     }
-
-    deleteEdgeTable();
-    createEdgeTable();
-    showEdgeTable();
 }
 
 /*select active node*/
