@@ -66,6 +66,7 @@ private slots:
     void open();
     void save();
     void translate();
+    QString& eventProcess(QString& _out);
 
     void hideEditNode();
     void setNodeName();
@@ -169,7 +170,7 @@ private:
     QPushButton *removeEdgeButton;
 
     std::map<QString, int> WeightIn;
-    std::map<QString, int> WeightOut;
+    std::map<QString, QStringList> WeightOut;
 
 //    std::vector<int> labelWeight;
 

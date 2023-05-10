@@ -91,8 +91,16 @@ GraphicWindow::GraphicWindow(QWidget *parent,MainWindow *wind,QString fileName):
             }
 
             int waga = list.at(2).toInt();
-            int outW = list.at(3).toInt();
-            Direction dir = (Direction)list.at(4).toInt();
+            Direction dir = (Direction)list.at(3).toInt();
+            QStringList outW;
+            int k = 0;
+            for (int i = 4; i < list.length(); i++)
+            {
+                if (list.at(i) == " ")
+                    continue;
+                outW[k++] = list.at(i);                 // вероятно, тут проблема с открытием сохраненного файла
+            }
+
 
             mngr->addItem(new Edge(sourc, des, waga, outW, dir, this));
             scene->addItem(mngr->getLastEdge());
@@ -184,9 +192,9 @@ void GraphicWindow::addNode(QString name, int weight, QString desc)
 }
 
 /*add new edge to graphic view and graph manager*/
-void GraphicWindow::addEdge(Node *source, Node *dest, int weight, int outW, Direction dir)
+void GraphicWindow::addEdge(Node *source, Node *dest, int weight, QStringList outWeight, Direction dir)
 {
-    Edge *newEdge=new Edge(source, dest, weight, outW, dir, this);
+    Edge *newEdge=new Edge(source, dest, weight, outWeight, dir, this);
     mngr->addItem(newEdge);
     scene()->addItem(newEdge);
 

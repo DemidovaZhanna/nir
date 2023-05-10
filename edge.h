@@ -20,7 +20,7 @@ public:
     Edge(Node *getSourceNode,
          Node *getDestNode,
          int w,
-         int outW,
+         QStringList outW,
          Direction d,
          GraphicWindow *graphicWindow);
     ~Edge();
@@ -36,12 +36,12 @@ public:
     QString getSource();
     QString getDest();
     int getWeight();
-    int getOutWeight();
+    QStringList getOutWeight();
     Direction getDirection();
     void setSource(Node *s);
     void setDest(Node *d);
     void setWeight(int w);
-    void setOutWeight(int outW);
+    void setOutWeight(QStringList outW);
     void setDirection(Direction d);
 
 protected:
@@ -59,7 +59,7 @@ private:
     QPointF sourcePoint;
     QPointF destPoint;
     int weight;
-    int outWeight;
+    QStringList outWeight;
     Direction direction;
     bool selected;
     GraphicWindow *graphic;

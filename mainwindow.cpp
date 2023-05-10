@@ -104,9 +104,104 @@ void MainWindow::save()
         out<<e->getSource()<<" "
            <<e->getDest()<<" "
            <<e->getWeight()<<" "
-           <<e->getOutWeight()<<" "
-           <<QString::number(static_cast<int>(e->getDirection()))<<"\n";
+           <<QString::number(static_cast<int>(e->getDirection()))<<" "
+           <<e->getOutWeight().join(" ")<<"\n";
     }
+}
+
+QString addOption(QString inp)
+{
+    QString option = "";
+    if (inp.contains("_DATA."))
+        option += " userdata";
+
+    if(inp.section(".", 1) == "REQ" or inp.section(".", 1) == "RESP")
+        option += " address";
+
+    return option;
+}
+
+QString& MainWindow::eventProcess(QString& _out)
+{
+    // создадим словарь counter, в котором в качестве ключей -- входные метки ребра,
+    // а в качестве значений -- вектор строк, содержащий шаблон (вх.верш + " " + вых.верш)
+    std::map<int, std::vector<QString>> counterIn;
+
+    for (auto& it: WeightIn)
+    {
+        counterIn[it.second].emplace_back(it.first);
+    }
+
+    // начинаем описывать событие NAME OF EVENT
+    _out += QString("ev name NAME OF EVENT \n");
+    _out += QString("ev clines \n");
+
+    // проходимся по counterIn и смотря на ключ рассматриваем все возможные входные события
+    std::vector<QString> nameState; // вектор строк по шаблону "STATEinp out", за исключением exit
+    for (auto& it: counterIn)
+    {
+        for (auto& k: it.second)
+            _out += QString("evcode if $state == ") + k.section(' ', 0, 0) + QString(" ") +
+                    (nameState.push_back(QString("STATE") + k), nameState.back().section(' ', 0, 0) + QString("\n"));
+    }
+
+    // добавим exit в nameState
+    _out += (nameState.push_back("exit"), QString("evcode goto exit \n"));
+
+    // разбираем каждый случай состояния
+    for (size_t i = 0; i < nameState.size(); i++)
+    {
+        QString nameStateAt = nameState.at(i);
+        _out += QString("evcode ") + nameStateAt.section(' ', 0, 0) + QString(": \n");   // если будет exit, то вернется вся строка
+
+
+        // по данной подстроке, следующей за STATE находим в словаре WeightIn соответствующее значение и получаем название входного события
+        int eventIn;
+        QStringList eventOut;
+
+        if (nameStateAt != nameState.back())
+        {
+            QString key = nameStateAt.mid(5); // выделяем подстроку, следующую за STATE
+            auto valIt = WeightIn.find(key);
+            if (valIt != WeightIn.end())
+            {
+                eventIn = valIt->second;
+                eventOut = WeightOut.find(key)->second;
+
+                QString inpEvent = _descrIn.at(--eventIn);
+
+                // заменим indexNameOfEvent в строке _out на название входного события inpEvent, подстрока точно будет найдена (проверка не нужна)
+                int indexInOut = _out.indexOf("NAME OF EVENT");
+                _out.replace(indexInOut, 13, inpEvent); // 13 -- длина NAME OF EVENT, не хочу создавать lvalue
+
+                // для всех выходных событий одного входного события (из одной вершины) формируем обработку
+                for (int i = 0; i < eventOut.length(); i++)
+                {
+                    _out += QString("evcode");
+                    // формируем _out по уровням
+                    if(inpEvent.section(".", 1) == "REQ" or inpEvent.section(".", 1) == "RESP")
+                        _out += QString(" down ");
+                    else if (inpEvent.section(".", 1) == "IND" or inpEvent.section(".", 1) == "CONF")
+                        _out += QString(" up ");
+
+                    _out += _descrOut.at(eventOut.at(i).toInt() - 1) + addOption(_descrOut.at(eventOut.at(i).toInt() - 1)) + QString("\n");
+                }
+
+            }
+            else // что-то не так, key не действителен. Обнуляем _out
+                _out = QString("ErrorKey");
+        }
+        else // на выходе -- exit, т.е. неверное состояние
+            _out += QString("out ERROR_WRONG STATE");
+    }
+
+    // вставим подстроку, которая выводит количество строк кода ev clines по ключевому слову evcode
+    int pos = _out.indexOf("ev clines");
+
+    if (pos != -1)
+        _out.insert(pos + 9, QString(" ") + QString::number(_out.count("evcode")));
+
+    return _out;
 }
 
 void MainWindow::translate()
@@ -123,15 +218,11 @@ void MainWindow::translate()
 
     QTextStream out(&file);
 
-    int event;
-    for (int i = 1; i <= nodesTable->count(); i++)
-    {
-        auto val = WeightIn.find(QString::number(1) + " " + QString::number(i));
-        if (val != WeightIn.end())
-            event = val->second;
-    }
+    QString progOut = ""; // будет присвоено начальное значение строки
+    progOut = eventProcess(progOut);
+    out << progOut.toUtf8();
 
-    out << trUtf8("Событие ") << _descrIn.at(event - 1) << "\n";
+    file.close();
 
 }
 
@@ -428,7 +519,7 @@ void MainWindow::showEditEdge()
     edgeEdit->setVisible(true);
 
     edgeWeightLine->setText(QString::number(activeEdge->getWeight()));
-    edgeOutWLine->setText(QString::number(activeEdge->getOutWeight()));
+    edgeOutWLine->setText(activeEdge->getOutWeight().join(" "));
 
     int sourcepos=sourceNodes2->findText(activeEdge->getSource());
     int destpos=destNodes2->findText(activeEdge->getDest());
@@ -462,22 +553,22 @@ void MainWindow::setEdgeWeight()
         else if(activeEdge->getDirection() == TWO_WAY)
             item += " <-> ";
 
-        item += activeEdge->getDest() + " Markers: " + edgeWeightLine->text() + " : " + edgeOutWLine->text();
+        item += activeEdge->getDest() + " Markers: " + edgeWeightLine->text();
+        if (edgeOutWLine->text() != "")
+            item += " : " + edgeOutWLine->text();
 
         edgesTable->currentItem()->setText(item);
         activeEdge->setWeight(edgeWeightLine->text().toInt());
-        activeEdge->setOutWeight(edgeOutWLine->text().toInt());
+        activeEdge->setOutWeight(edgeOutWLine->text().split(" "));
 
         WeightIn[activeEdge->getSource() + " " + activeEdge->getDest()] = edgeWeightLine->text().toInt();
-        WeightOut[activeEdge->getSource() + " " + activeEdge->getDest()] = edgeOutWLine->text().toInt();
+        WeightOut[activeEdge->getSource() + " " + activeEdge->getDest()] = edgeOutWLine->text().split(" ");
 
         deleteEdgeTable();
         createEdgeTable();
     }
     else if (edgeWeightLine->text() == "")
         error("Type input marker first!");
-    else
-        error("Type output marker first!");
 }
 
 /*set new source for selected edge*/
@@ -504,7 +595,7 @@ void MainWindow::setEdgeSource()
 
     Node *dest = activeEdge->getDestNode();
     int weight = activeEdge->getWeight();
-    int outWeight = activeEdge->getOutWeight();
+    QStringList outWeight = activeEdge->getOutWeight();
     Direction dir = activeEdge->getDirection();
 
     QListWidgetItem* item = edgesTable->currentItem();
@@ -546,7 +637,7 @@ void MainWindow::setEdgeDest()
 
     Node *source = activeEdge->getSourceNode();
     int weight = activeEdge->getWeight();
-    int outWeight = activeEdge->getOutWeight();
+    QStringList outWeight = activeEdge->getOutWeight();
     Direction dir = activeEdge->getDirection();
 
     QListWidgetItem* item = edgesTable->currentItem();
@@ -659,7 +750,6 @@ void MainWindow::createSelector()
     layout2->addWidget(addEdgeWeight);
     layout2->addWidget(new QLabel("Output Marker: "));
     addEdgeOutW=new QLineEdit();
-    addEdgeOutW->setValidator( new QIntValidator(0,100));
     layout2->addWidget(addEdgeOutW);
     newEdgeButton=new QPushButton("Add new edge..");
     connect(newEdgeButton, SIGNAL (released()), this, SLOT(addEdge()));
@@ -829,9 +919,6 @@ void MainWindow::addEdge()
     if(addEdgeWeight->text() == "")
         error("Type input marker first!");
 
-    if(addEdgeOutW->text() == "")
-        error("Type output marker first!");
-
     else
     {
         for(int i = 0; i < edgesTable->count(); i++)
@@ -856,7 +943,9 @@ void MainWindow::addEdge()
         Node *d = graphic->getMngr()->getNodeByName(destNodes->currentText());
         Direction dir = static_cast<Direction>(directionOfEdge->currentText().toInt());
         int weight = addEdgeWeight->text().toInt();
-        int outW = addEdgeOutW->text().toInt();
+
+        QStringList outW = addEdgeOutW->text().split(QRegExp("\\s+"));
+
         graphic->addEdge(s, d, weight, outW, dir);
 
         WeightIn.insert({sourceNodes->currentText() + " " + destNodes->currentText(), weight});
@@ -896,7 +985,10 @@ void MainWindow::addEdge(Edge *e)
     {
         item += " <-> ";
     }
-    item += e->getDest() + " Markers: " + QString::number(e->getWeight()) + " : " + QString::number(e->getOutWeight());
+    item += e->getDest() + " Markers: " + QString::number(e->getWeight());
+    if (e->getOutWeight().join(" ") != "")
+        item += " : " + e->getOutWeight().join(" ");
+
     edgesTable->addItem(new QListWidgetItem(item));
 
     WeightIn.insert({e->getSource() + " " + e->getDest(), e->getWeight()});

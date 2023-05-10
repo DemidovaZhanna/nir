@@ -5,7 +5,7 @@
 #include "mainwindow.h"
 
 /*set new edge with given parameters*/
-Edge::Edge(Node *sourceNode, Node *destNode, int w, int outW, Direction d, GraphicWindow *graphicWindow)
+Edge::Edge(Node *sourceNode, Node *destNode, int w, QStringList outW, Direction d, GraphicWindow *graphicWindow)
     :source(sourceNode), dest(destNode), weight(w), outWeight(outW), direction(d), graphic(graphicWindow)
 {
     setAcceptedMouseButtons(0);
@@ -129,10 +129,17 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
         gradient.setColorAt(0, Qt::darkGray);
         gradient.setColorAt(1, Qt::black);
         painter->setBrush(gradient);
-        painter->drawEllipse(center.x() -10,center.y() -10, 20, 20);
+        painter->drawEllipse(center.x() -10,center.y() -10, 21, 21);
 
-        QRectF textRect(center.x()-5, center.y()-5, 10, 10);
-        QString message = QString::number(weight) + ":" + QString::number(outWeight);
+        QRectF textRect(center.x()-8, center.y()-8, 19, 19);
+        QString message = QString::number(weight) + ":";
+        for (int i = 0; i < outWeight.length(); i++)
+        {
+            message += outWeight.at(i);
+            if (outWeight.length() != 1 && i != outWeight.length() - 1)
+                message += ",";
+        }
+
         QFont font = painter->font();
         font.setBold(true);
         font.setPointSize(5);
@@ -179,9 +186,16 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
         gradient.setColorAt(0, Qt::darkGray);
         gradient.setColorAt(1, Qt::black);
         painter->setBrush(gradient);
-        painter->drawEllipse(source->pos().x()+46,source->pos().y()+46, 20, 20);
-        QRectF textRect(source->pos().x()+51,source->pos().y()+51, 10, 10);
-        QString message = QString::number(weight) + ":" + QString::number(outWeight);
+        painter->drawEllipse(source->pos().x()+46,source->pos().y()+46, 21, 21);
+        QRectF textRect(source->pos().x()+48,source->pos().y()+48, 19, 19);
+        QString message = QString::number(weight) + ":";
+        for (int i = 0; i < outWeight.length(); i++)
+        {
+            message += outWeight.at(i);
+            if (outWeight.length() != 1 && i != outWeight.length() - 1)
+                message += ",";
+        }
+
         QFont font = painter->font();
         font.setBold(true);
         font.setPointSize(5);
@@ -220,7 +234,7 @@ int Edge::getWeight()
     return weight;
 }
 
-int Edge::getOutWeight()
+QStringList Edge::getOutWeight()
 {
     return outWeight;
 }
@@ -258,7 +272,7 @@ void Edge::setWeight(int w)
     update();
 }
 
-void Edge::setOutWeight(int outW)
+void Edge::setOutWeight(QStringList outW)
 {
     outWeight = outW;
     update();
