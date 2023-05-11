@@ -16,7 +16,8 @@ void error(QString text)
 
 MainWindow::~MainWindow(){}
 
-MainWindow::MainWindow()
+MainWindow::MainWindow() :
+    _optionOut(_descrIn.size(), "")
 {
     QWidget *widget = new QWidget;
     setCentralWidget(widget);
@@ -132,74 +133,95 @@ QString& MainWindow::eventProcess(QString& _out)
         counterIn[it.second].emplace_back(it.first);
     }
 
-    // начинаем описывать событие NAME OF EVENT
-    _out += QString("ev name NAME OF EVENT \n");
-    _out += QString("ev clines \n");
+    int numClines = 1;      // после этого числа вхождений вставить число строк далее
+    QString numEvcode = 0;
+    int maxSTATE = WeightIn.size() + 1; // максимальное количество состояний -- количество входных меток + 1
+    int numState = 1;
 
-    // проходимся по counterIn и смотря на ключ рассматриваем все возможные входные события
-    std::vector<QString> nameState; // вектор строк по шаблону "STATEinp out", за исключением exit
     for (auto& it: counterIn)
     {
+        // начинаем описывать событие NAME OF EVENT
+        _out += QString("ev name NAME OF EVENT \n");
+        _out += QString("ev clines \n");
+
+        // проходимся по counterIn и смотря на ключ рассматриваем все возможные входные события
+        std::vector<QString> nameState; // вектор строк по шаблону "STATEinp out", за исключением exit
+
+//        bool cont;
         for (auto& k: it.second)
             _out += QString("evcode if $state == ") + k.section(' ', 0, 0) + QString(" ") +
-                    (nameState.push_back(QString("STATE") + k), nameState.back().section(' ', 0, 0) + QString("\n"));
-    }
+                    (nameState.push_back(QString("STATE") + k), nameState.back().section(' ', 0, 0))+ QString("\n");
 
-    // добавим exit в nameState
-    _out += (nameState.push_back("exit"), QString("evcode goto exit \n"));
+        // добавим exit в nameState
+        _out += (nameState.push_back("error"), QString("evcode goto error \n"));
 
-    // разбираем каждый случай состояния
-    for (size_t i = 0; i < nameState.size(); i++)
-    {
-        QString nameStateAt = nameState.at(i);
-        _out += QString("evcode ") + nameStateAt.section(' ', 0, 0) + QString(": \n");   // если будет exit, то вернется вся строка
-
-
-        // по данной подстроке, следующей за STATE находим в словаре WeightIn соответствующее значение и получаем название входного события
-        int eventIn;
-        QStringList eventOut;
-
-        if (nameStateAt != nameState.back())
+        // разбираем каждый случай состояния
+        for (size_t i = 0; i < nameState.size(); i++)
         {
-            QString key = nameStateAt.mid(5); // выделяем подстроку, следующую за STATE
-            auto valIt = WeightIn.find(key);
-            if (valIt != WeightIn.end())
+            QString nameStateAt = nameState.at(i);
+            _out += QString("evcode ") + nameStateAt.section(' ', 0, 0) + QString(": \n");
+
+
+            // по данной подстроке, следующей за STATE находим в словаре WeightIn соответствующее значение и получаем название входного события
+            int eventIn;
+            QStringList eventOut;
+
+            if (nameStateAt != nameState.back())
             {
-                eventIn = valIt->second;
-                eventOut = WeightOut.find(key)->second;
-
-                QString inpEvent = _descrIn.at(--eventIn);
-
-                // заменим indexNameOfEvent в строке _out на название входного события inpEvent, подстрока точно будет найдена (проверка не нужна)
-                int indexInOut = _out.indexOf("NAME OF EVENT");
-                _out.replace(indexInOut, 13, inpEvent); // 13 -- длина NAME OF EVENT, не хочу создавать lvalue
-
-                // для всех выходных событий одного входного события (из одной вершины) формируем обработку
-                for (int i = 0; i < eventOut.length(); i++)
+                QString key = nameStateAt.mid(5); // выделяем подстроку, следующую за STATE
+                auto valIt = WeightIn.find(key);
+                if (valIt != WeightIn.end())
                 {
-                    _out += QString("evcode");
-                    // формируем _out по уровням
-                    if(inpEvent.section(".", 1) == "REQ" or inpEvent.section(".", 1) == "RESP")
-                        _out += QString(" down ");
-                    else if (inpEvent.section(".", 1) == "IND" or inpEvent.section(".", 1) == "CONF")
-                        _out += QString(" up ");
+                    eventIn = valIt->second;
+                    eventOut = WeightOut.find(key)->second;
 
-                    _out += _descrOut.at(eventOut.at(i).toInt() - 1) + addOption(_descrOut.at(eventOut.at(i).toInt() - 1)) + QString("\n");
+                    QString inpEvent = _descrIn.at(--eventIn);
+
+                    // заменим indexNameOfEvent в строке _out на название входного события inpEvent, подстрока точно будет найдена (проверка не нужна)
+                    int indexInOut = _out.indexOf("NAME OF EVENT");
+                    _out.replace(indexInOut, sizeof("NAME OF EVENT"), inpEvent);
+
+                    // для всех выходных событий одного входного события (из одной вершины) формируем обработку
+                    for (int i = 0; i < eventOut.length(); i++)
+                    {
+                        _out += QString("evcode");
+                        // формируем _out по уровням
+                        if(inpEvent.section(".", 1) == "REQ" or inpEvent.section(".", 1) == "RESP")
+                            _out += QString(" down ");
+                        else if (inpEvent.section(".", 1) == "IND" or inpEvent.section(".", 1) == "CONF")
+                            _out += QString(" up ");
+                        else _out += QString(" ");
+
+                        _out += _descrOut.at(eventOut.at(i).toInt() - 1) + addOption(_descrOut.at(eventOut.at(i).toInt() - 1));
+                        if (_optionOut.at(eventOut.at(i).toInt() - 1) != "")
+                            _out += QString(" $") + _optionOut.at(eventOut.at(i).toInt() - 1);
+                        _out += QString("\n");
+                    }
+
                 }
-
+                else // что-то не так, key не действителен. Обнуляем _out
+                    _out = QString("ErrorKey\n");
             }
-            else // что-то не так, key не действителен. Обнуляем _out
-                _out = QString("ErrorKey");
+            else // на выходе -- error, т.е. неверное состояние
+                _out += QString("out ERROR_WRONG STATE\n");
         }
-        else // на выходе -- exit, т.е. неверное состояние
-            _out += QString("out ERROR_WRONG STATE");
+
+        int count = 0,
+            ind = -1;
+
+        // вставим подстроку, которая выводит количество строк кода ev clines по ключевому слову evcode
+        while (count < numClines)
+        {
+            ind = _out.indexOf("ev clines", ind + 1);
+            if (ind < 0) break;
+            count++;
+        }
+
+        if (ind >= 0)
+            _out.insert(ind + 9, QString(" ") + (numEvcode = QString::number(_out.count("evcode") - numEvcode.toInt()), numEvcode));
+
+        numClines++;
     }
-
-    // вставим подстроку, которая выводит количество строк кода ev clines по ключевому слову evcode
-    int pos = _out.indexOf("ev clines");
-
-    if (pos != -1)
-        _out.insert(pos + 9, QString(" ") + QString::number(_out.count("evcode")));
 
     return _out;
 }
@@ -218,12 +240,30 @@ void MainWindow::translate()
 
     QTextStream out(&file);
 
+    // сохраняем опции из таблицы выходных меток ребра
+    int rows = markerTable->rowCount();
+    for (int row = 0 ; row < rows; row++)
+    {
+        QTableWidgetItem* item = markerTable->item(row, 1);
+        if (item)
+        {
+            QString cellText = item->text();
+            _optionOut.at(row) = cellText;
+        }
+    }
+
     QString progOut = ""; // будет присвоено начальное значение строки
     progOut = eventProcess(progOut);
     out << progOut.toUtf8();
 
     file.close();
 
+}
+
+void MainWindow::onCellChanged(int row, int column) // изменить, чтобы по индексам сохраняло, потом при обновлении таблицы выводило эти значения
+{
+    QString value = markerTable->item(row, column)->text();
+    _optionOut.insert(_optionOut.begin()+row, value);
 }
 
 /*connect menu buttons with actions*/
@@ -769,101 +809,57 @@ void MainWindow::createEdgeTable()
 {
     edgeTable = new QToolBar(tr("\nMarker table"), this);
     this->addToolBar(Qt::LeftToolBarArea, edgeTable);
+    edgeTable->setFixedWidth(400);
     edgeTable->setMovable(false);
     edgeTable->addSeparator();
 
     edgeTable->addWidget(new QLabel("Input marker table:"));
-    markerTable=new QTableWidget();
-    markerTable->setMaximumWidth(300);
+    markerTable=new QTableWidget(this);
+    markerTable->setMinimumWidth(300);
     markerTable->setMaximumHeight(475);
-    markerTable->setColumnCount(1);
+    markerTable->insertColumn(markerTable->columnCount());
+    markerTable->setColumnWidth(markerTable->columnCount() - 1, 400);
+
     markerTable->horizontalHeader()->setStretchLastSection(true);
     markerTable->verticalHeader()->setResizeContentsPrecision(QHeaderView::ResizeToContents);
     markerTable->showGrid();
 
-//    edgenewWeightSet = new QPushButton("Set");
-//    edgenewWOutSet = new QPushButton("Set");
-//    connect(edgenewWeightSet, SIGNAL (released()), this, SLOT(setEdgeDescrIn()));
-//    connect(edgenewWOutSet, SIGNAL (released()), this, SLOT(setEdgeDescrOut()));
-
     markerTable->setHorizontalHeaderLabels(QStringList() << "Description");
 
-//    int i = 0;
-//    for (auto itr = WeightIn.begin(); itr != WeightIn.end(); itr++)
-//    {
-//        markerTable->insertRow(i);
-
-//        labelweight = new QComboBox();
-
-//        labelweight->insertItem(0, QString("T_CONNECT.REQ"));
-//        labelweight->insertItem(1, QString("RECONNECT"));
-//        labelweight->insertItem(2, QString("STOP_TRY_RECONNECT"));
-//        labelweight->insertItem(3, QString("N_CONNECT.CONF"));
-//        labelweight->insertItem(4, QString("T_DATA.REQ"));
-//        labelweight->insertItem(5, QString("RESEND"));
-//        labelweight->insertItem(6, QString("STOP_TRY_RESEND"));
-//        labelweight->insertItem(7, QString("N_DATA.IND (disconnect)"));
-//        labelweight->insertItem(8, QString("N_CONNECT.IND"));
-//        labelweight->insertItem(9, QString("T_CONNECT.RESP"));
-//        labelweight->insertItem(10, QString("N_DATA.IND"));
-//        labelweight->insertItem(11, QString("T_DISCONNECT.REQ"));
-//        labelweight->insertItem(12, QString("REDISCONNECT"));
-//        labelweight->insertItem(13, QString("N_DISCONNECT.IND"));
-//        labelweight->insertItem(14, QString("STOP_TRY_REDISCONNECT"));
-
-//        markerTable->setCellWidget(i, 1, labelweight);
-
-//        markerTable->setItem(i++, 0, new QTableWidgetItem(QString("%1").arg(itr->second)));
-//    }
-
-    for (int i = 0; i < 15; i++)
+    for (size_t i = 0; i < _descrIn.size(); i++)
     {
         markerTable->insertRow(i);
         markerTable->setItem(i, 0, new QTableWidgetItem(_descrIn.at(i)));
     }
 
     edgeTable->addWidget(markerTable);
-//    edgeTable->addWidget(edgenewWeightSet);
     edgeTable->addSeparator();
 
     edgeTable->addWidget(new QLabel("Output marker table:"));
     markerTable=new QTableWidget();
-    markerTable->setMaximumWidth(350);
-    markerTable->setMaximumHeight(300);
-    markerTable->setColumnCount(1);
+    markerTable->setMinimumWidth(300);
+    markerTable->setMaximumHeight(475);
+    markerTable->insertColumn(markerTable->columnCount());
+    markerTable->setColumnWidth(markerTable->columnCount() - 1, 200);
+
+    markerTable->insertColumn(markerTable->columnCount());
+    markerTable->setColumnWidth(markerTable->columnCount() - 1, 100);
     markerTable->horizontalHeader()->setStretchLastSection(true);
     markerTable->showGrid();
 
-    markerTable->setHorizontalHeaderLabels(QStringList() << "Description");
+    markerTable->setHorizontalHeaderLabels(QStringList() << "Description" << "Option");
 
-//    int o = 0;
-//    for (auto itr = WeightOut.begin(); itr != WeightOut.end(); itr++)
-//    {
-//        markerTable->insertRow(o);
-//        QComboBox *comboBox = new QComboBox();
-
-//        comboBox->insertItem(0, QString("N_CONNECT.REQ"));
-//        comboBox->insertItem(1, QString("N_DISCONNECT.REQ"));
-//        comboBox->insertItem(2, QString("T_DISCONNECT.IND"));
-//        comboBox->insertItem(3, QString("T_CONNECT.CONF"));
-//        comboBox->insertItem(4, QString("N_DATA.REQ"));
-//        comboBox->insertItem(5, QString("T_CONNECT.IND"));
-//        comboBox->insertItem(6, QString("N_CONNECT.RESP"));
-//        comboBox->insertItem(7, QString("T_DATA.IND"));
-//        comboBox->insertItem(8, QString("N_DATA.REQ (disconnect)"));
-//        markerTable->setCellWidget(o, 1, comboBox);
-
-//        markerTable->setItem(o++, 0, new QTableWidgetItem(QString("%1").arg(itr->second)));
-//    }
-
-    for (int i = 0; i < 9; i++)
+    for (size_t i = 0; i < _descrOut.size(); i++)
     {
         markerTable->insertRow(i);
         markerTable->setItem(i, 0, new QTableWidgetItem(_descrOut.at(i)));
+
+        QTableWidgetItem *item = new QTableWidgetItem(_optionOut.at(i));
+        item->setFlags(item->flags() | Qt::ItemIsEditable);
+        markerTable->setItem(i, 1, item);
     }
 
     edgeTable->addWidget(markerTable);
-//    edgeTable->addWidget(edgenewWOutSet);
     edgeTable->addSeparator();
 
     hideEdgeTable();
@@ -871,6 +867,18 @@ void MainWindow::createEdgeTable()
 
 void MainWindow::deleteEdgeTable()
 {
+    // перебрать все ячейки и сохранить данные в вектор
+    int rows = markerTable->rowCount();
+    for (int row = 0 ; row < rows; row++)
+    {
+        QTableWidgetItem* item = markerTable->item(row, 1);
+        if (item)
+        {
+            QString cellText = item->text();
+            _optionOut.at(row) = cellText;
+        }
+    }
+
     delete markerTable;
     delete edgeTable;
 }

@@ -9,25 +9,6 @@
 
 #include "graphicwindow.h"
 
-//enum _WeightIn
-//{
-//    T_CONNECT_REQ = 0,
-//    RECONNECT = 1,
-//    STOP_TRY_RECONNECT = 2,
-//    N_CONNECT_CONF = 3,
-//    T_DATA_REQ = 4,
-//    RESEND = 5,
-//    STOP_TRY_RESEND = 6,
-//    N_DATA_IND_dis = 7,
-//    N_CONNECT_IND = 8,
-//    T_CONNECT_RESP = 9,
-//    N_DATA_IND = 10,
-//    T_DISCONNECT_REQ = 11,
-//    REDISCONNECT = 12,
-//    N_DISCONNECT_IND = 13,
-//    STOP_TRY_REDISCONNECT = 14
-//};
-
 class QMenu;
 class QAction;
 class QLabel;
@@ -66,6 +47,7 @@ private slots:
     void open();
     void save();
     void translate();
+    void onCellChanged(int row, int column);
     QString& eventProcess(QString& _out);
 
     void hideEditNode();
@@ -172,8 +154,6 @@ private:
     std::map<QString, int> WeightIn;
     std::map<QString, QStringList> WeightOut;
 
-//    std::vector<int> labelWeight;
-
     std::vector<QString> _descrIn = {"T_CONNECT.REQ", "RECONNECT", "STOP_TRY_RECONNECT",
                                      "N_CONNECT.CONF", "T_DATA.REQ", "RESEND",
                                      "STOP_TRY_RESEND", "N_DATA.IND (disconnect)", "N_CONNECT.IND",
@@ -183,6 +163,8 @@ private:
     std::vector<QString> _descrOut = {"N_CONNECT.REQ", "N_DISCONNECT.REQ", "T_DISCONNECT.IND",
                                      "T_CONNECT.CONF", "N_DATA.REQ", "T_CONNECT.IND",
                                      "N_CONNECT.RESP", "T_DATA.IND", "N_DATA.REQ (disconnect)"};
+
+    std::vector<QString> _optionOut;
 };
 
 #endif // MAINWINDOW_H
