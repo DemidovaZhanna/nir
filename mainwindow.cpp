@@ -135,10 +135,8 @@ QString& MainWindow::eventProcess(QString& _out)
 
     int numClines = 1;      // после этого числа вхождений вставить число строк далее
     QString numEvcode = 0;
-    int maxSTATE = WeightIn.size() + 1; // максимальное количество состояний -- количество входных меток + 1
-    int numState = 1;
 
-    for (auto& it: counterIn)
+    for (auto& it : counterIn)
     {
         // начинаем описывать событие NAME OF EVENT
         _out += QString("ev name NAME OF EVENT \n");
@@ -147,19 +145,24 @@ QString& MainWindow::eventProcess(QString& _out)
         // проходимся по counterIn и смотря на ключ рассматриваем все возможные входные события
         std::vector<QString> nameState; // вектор строк по шаблону "STATEinp out", за исключением exit
 
-//        bool cont;
-        for (auto& k: it.second)
+        for (size_t i = 0; i < it.second.size(); i++)
+        {
+            auto k = it.second.at(i);
             _out += QString("evcode if $state == ") + k.section(' ', 0, 0) + QString(" ") +
-                    (nameState.push_back(QString("STATE") + k), nameState.back().section(' ', 0, 0))+ QString("\n");
+                    (nameState.push_back(QString("STATE") + k), QString("STATE") + QString::number(i + 1)) + QString("\n");
+        }
 
-        // добавим exit в nameState
+        // добавим error в nameState
         _out += (nameState.push_back("error"), QString("evcode goto error \n"));
 
         // разбираем каждый случай состояния
         for (size_t i = 0; i < nameState.size(); i++)
         {
             QString nameStateAt = nameState.at(i);
-            _out += QString("evcode ") + nameStateAt.section(' ', 0, 0) + QString(": \n");
+            _out += QString("evcode ") + nameStateAt.left(5);
+            if (i != nameState.size() - 1)
+                _out += QString::number(i + 1);
+            _out += QString(": \n");
 
 
             // по данной подстроке, следующей за STATE находим в словаре WeightIn соответствующее значение и получаем название входного события
