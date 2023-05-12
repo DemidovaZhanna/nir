@@ -489,6 +489,16 @@ void MainWindow::setNodeColor()
     delete coldiag;
 }
 
+void MainWindow::setInputMarker()
+{
+
+}
+
+void MainWindow::setOutputMarker()
+{
+
+}
+
 /*select node*/
 void MainWindow::setActiveNode(Node *n)
 {
@@ -531,11 +541,6 @@ void MainWindow::createEditEdge()
     edgeEdit->addWidget(new QLabel("Destination: "));
     edgeEdit->addWidget(destNodes2);
     edgeEdit->addWidget(edgeDestSet);
-    edgeEdit->addSeparator();
-
-    edgeEdit->addWidget(new QLabel("Direction: "));
-    edgeEdit->addWidget(dir2);
-    edgeEdit->addWidget(edgeDirSet);
     edgeEdit->addSeparator();
 
     edgeEdit->addWidget(new QLabel("Input marker: "));
@@ -588,15 +593,7 @@ void MainWindow::setEdgeWeight()
 {
     if((edgeWeightLine->text() != "") && (edgeOutWLine->text() != ""))
     {
-        QString item = " " + activeEdge->getSource();
-        if(activeEdge->getDirection() == SOURCE_TO_DEST)
-            item += " -> ";
-        else if(activeEdge->getDirection() == DEST_TO_SOURCE)
-            item += " <- ";
-        else if(activeEdge->getDirection() == TWO_WAY)
-            item += " <-> ";
-
-        item += activeEdge->getDest() + " Markers: " + edgeWeightLine->text();
+        QString item = " " + activeEdge->getSource() + " -> " + activeEdge->getDest() + " Markers: " + edgeWeightLine->text();
         if (edgeOutWLine->text() != "")
             item += " : " + edgeOutWLine->text();
 
@@ -639,7 +636,7 @@ void MainWindow::setEdgeSource()
     Node *dest = activeEdge->getDestNode();
     int weight = activeEdge->getWeight();
     QStringList outWeight = activeEdge->getOutWeight();
-    Direction dir = activeEdge->getDirection();
+    Direction dir = Direction::SOURCE_TO_DEST;
 
     QListWidgetItem* item = edgesTable->currentItem();
     delete item;
@@ -681,7 +678,7 @@ void MainWindow::setEdgeDest()
     Node *source = activeEdge->getSourceNode();
     int weight = activeEdge->getWeight();
     QStringList outWeight = activeEdge->getOutWeight();
-    Direction dir = activeEdge->getDirection();
+    Direction dir = Direction::SOURCE_TO_DEST;
 
     QListWidgetItem* item = edgesTable->currentItem();
     delete item;
@@ -703,18 +700,7 @@ void MainWindow::setEdgeDest()
 /*set new direction for selected edge*/
 void MainWindow::setEdgeDirection()
 {
-    activeEdge->setDirection(static_cast<Direction>(dir2->currentIndex()));
-}
-
-void MainWindow::setEdgeDescrIn()
-{
-//    activeEdge->setWeight(static_cast<_WeightIn>(labelweight->currentIndex()));
-
-}
-
-void MainWindow::setEdgeDescrOut()
-{
-
+    activeEdge->setDirection(Direction::SOURCE_TO_DEST);
 }
 
 /*select edge*/
@@ -781,12 +767,6 @@ void MainWindow::createSelector()
     layout2->addWidget(new QLabel("Destination: "));
     destNodes=new QComboBox();
     layout2->addWidget(destNodes);
-    layout2->addWidget(new QLabel("Direction: "));
-    directionOfEdge=new QComboBox();
-    directionOfEdge->insertItem(0,QString("SOURCE_TO_DEST"));
-    directionOfEdge->insertItem(1,QString("DEST_TO_SOURCE"));
-    directionOfEdge->insertItem(2,QString("TWO_WAY"));
-    layout2->addWidget(directionOfEdge);
     layout2->addWidget(new QLabel("Input Marker: "));
     addEdgeWeight=new QLineEdit();
     addEdgeWeight->setValidator( new QIntValidator(0,100));
@@ -952,7 +932,7 @@ void MainWindow::addEdge()
 
         Node *s = graphic->getMngr()->getNodeByName(sourceNodes->currentText());
         Node *d = graphic->getMngr()->getNodeByName(destNodes->currentText());
-        Direction dir = static_cast<Direction>(directionOfEdge->currentText().toInt());
+        Direction dir = Direction::SOURCE_TO_DEST;
         int weight = addEdgeWeight->text().toInt();
 
         QStringList outW = addEdgeOutW->text().split(QRegExp("\\s+"));

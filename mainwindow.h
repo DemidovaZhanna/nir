@@ -55,15 +55,14 @@ private slots:
     void setNodeWeight();
     void setNodeDesc();
     void setNodeColor();
+    void setInputMarker();
+    void setOutputMarker();
 
     void hideEditEdge();
     void setEdgeWeight();
     void setEdgeSource();
     void setEdgeDest();
     void setEdgeDirection();
-
-    void setEdgeDescrIn();
-    void setEdgeDescrOut();
 
     void showSelector();
     void hideSelector();
@@ -146,6 +145,8 @@ private:
     QComboBox *sourceNodes;
     QComboBox *destNodes;
     QComboBox *directionOfEdge;
+    QComboBox *inputMarker;
+    QComboBox *outputMarker;
     QLineEdit *addEdgeWeight;
     QLineEdit *addEdgeOutW;
     QPushButton *newEdgeButton;

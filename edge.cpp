@@ -155,38 +155,22 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
 
         selected ? painter->setBrush(QColor(200,200,200,255)) : painter->setBrush(Qt::black);
 
-        QPointF sourceArrowP1 = sourcePoint + QPointF(sin(angle + Pi / 3) * 10,     //* arrowSize
-                                                      cos(angle + Pi / 3) * 10);
-        QPointF sourceArrowP2 = sourcePoint + QPointF(sin(angle + Pi - Pi / 3) * 10,
-                                                      cos(angle + Pi - Pi / 3) * 10);
         QPointF destArrowP1 = destPoint + QPointF(sin(angle - Pi / 3) * 10,
                                                   cos(angle - Pi / 3) * 10);
         QPointF destArrowP2 = destPoint + QPointF(sin(angle - Pi + Pi / 3) * 10,
                                                   cos(angle - Pi + Pi / 3) * 10);
 
-        if(direction==DEST_TO_SOURCE)
-        {
-            painter->drawPolygon(QPolygonF() << line.p1() << sourceArrowP1 << sourceArrowP2);
-        }
-        if(direction==SOURCE_TO_DEST)
-        {
-            painter->drawPolygon(QPolygonF() << line.p2() << destArrowP1 << destArrowP2);
-        }
-        if(direction==TWO_WAY)
-        {
-            painter->drawPolygon(QPolygonF() << line.p1() << sourceArrowP1 << sourceArrowP2);
-            painter->drawPolygon(QPolygonF() << line.p2() << destArrowP1 << destArrowP2);
-        }
+        painter->drawPolygon(QPolygonF() << line.p2() << destArrowP1 << destArrowP2);
     }
     //A->A
-    else{
-        painter->drawArc(source->pos().x()-13,dest->pos().y()-13, 80,80,-210*16,330*16);
+    else {
+        painter->drawArc(source->pos().x()-13,dest->pos().y()-13, 80,80,-210*16,315*16);
 
         QRadialGradient gradient(-3, -3, 10);
         gradient.setColorAt(0, Qt::darkGray);
         gradient.setColorAt(1, Qt::black);
-        painter->setBrush(gradient);
-        painter->drawEllipse(source->pos().x()+46,source->pos().y()+46, 21, 21);
+        painter->setBrush(gradient);       
+        painter->drawEllipse(source->pos().x()+46,source->pos().y()+46, 21, 21);      
         QRectF textRect(source->pos().x()+48,source->pos().y()+48, 19, 19);
         QString message = QString::number(weight) + ":";
         for (int i = 0; i < outWeight.length(); i++)
@@ -201,6 +185,28 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
         font.setPointSize(5);
         painter->setFont(font);
         painter->drawText(textRect,Qt::AlignCenter, message);
+
+        // рисуем стрелку на конце
+
+        double Pi = 3.14159265359;
+        double DoublePi = 6.28318531;
+
+        QPointF start = QPointF(dest->pos().x(), dest->pos().y() - 17);
+        QPointF end = QPointF(dest->pos().x() + 18, dest->pos().y() - 7);
+        QLineF linet(start, end);
+        double angle = ::acos(linet.dx() / linet.length());
+        if (linet.dy() >= 0)
+            angle = DoublePi - angle - 0.1;
+
+        QPointF arrowP1 = end + QPointF(sin(angle - Pi / 3) * 10, cos(angle - Pi / 3) * 10);
+        QPointF arrowP2 = end + QPointF(sin(angle - Pi + Pi / 3) * 10, cos(angle - Pi + Pi / 3) * 10);
+
+        QPainterPath path(end);
+        path.lineTo(arrowP1);
+        path.lineTo(arrowP2);
+        path.lineTo(end);
+        painter->drawPath(path);
+
     }
 }
 
