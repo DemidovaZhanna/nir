@@ -200,6 +200,7 @@ QString& MainWindow::eventProcess(QString& _out)
                             _out += QString(" $") + _optionOut.at(eventOut.at(i).toInt() - 1);
                         _out += QString("\n");
                     }
+                    _out += "RETURN\n";
 
                 }
                 else // что-то не так, key не действителен. Обнуляем _out
