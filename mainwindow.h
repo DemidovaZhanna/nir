@@ -6,6 +6,7 @@
 #include <QtWidgets>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <unordered_map>
 
 #include "graphicwindow.h"
 
@@ -55,8 +56,6 @@ private slots:
     void setNodeWeight();
     void setNodeDesc();
     void setNodeColor();
-    void setInputMarker();
-    void setOutputMarker();
 
     void hideEditEdge();
     void setEdgeWeight();
@@ -121,6 +120,9 @@ private:
     QPushButton *closeEdgeEdit;
     QComboBox *sourceNodes2;
     QComboBox *destNodes2;
+    QComboBox *inputMarker2;
+    QComboBox *outputMarker3;
+    QComboBox *outputMarker4;
     QComboBox *dir2;
 
     /*selector */
@@ -147,13 +149,12 @@ private:
     QComboBox *directionOfEdge;
     QComboBox *inputMarker;
     QComboBox *outputMarker;
-    QLineEdit *addEdgeWeight;
-    QLineEdit *addEdgeOutW;
+    QComboBox *outputMarker2;
     QPushButton *newEdgeButton;
     QPushButton *removeEdgeButton;
 
-    std::map<QString, int> WeightIn;
-    std::map<QString, QStringList> WeightOut;
+    std::unordered_map<QString, QString> WeightIn; // формат: вх.верш + " " + вых.верш. , вх.вес
+    std::unordered_map<QString, QStringList> WeightOut;
 
     std::vector<QString> _descrIn = {"T_CONNECT.REQ", "RECONNECT", "STOP_TRY_RECONNECT",
                                      "N_CONNECT.CONF", "T_DATA.REQ", "RESEND",
@@ -161,7 +162,7 @@ private:
                                      "T_CONNECT.RESP", "N_DATA.IND", "T_DISCONNECT.REQ",
                                      "REDISCONNECT", "N_DISCONNECT.IND", "STOP_TRY_REDISCONNECT"};
 
-    std::vector<QString> _descrOut = {"N_CONNECT.REQ", "N_DISCONNECT.REQ", "T_DISCONNECT.IND",
+    std::vector<QString> _descrOut = {"<none>", "N_CONNECT.REQ", "N_DISCONNECT.REQ", "T_DISCONNECT.IND",
                                      "T_CONNECT.CONF", "N_DATA.REQ", "T_CONNECT.IND",
                                      "N_CONNECT.RESP", "T_DATA.IND", "N_DATA.REQ (disconnect)"};
 

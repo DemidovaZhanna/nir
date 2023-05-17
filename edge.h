@@ -19,7 +19,7 @@ class Edge : public QGraphicsItem
 public:
     Edge(Node *getSourceNode,
          Node *getDestNode,
-         int w,
+         QString w,
          QStringList outW,
          Direction d,
          GraphicWindow *graphicWindow);
@@ -35,12 +35,12 @@ public:
     Node *getDestNode() const;
     QString getSource();
     QString getDest();
-    int getWeight();
+    QString getWeight();
     QStringList getOutWeight();
     Direction getDirection();
     void setSource(Node *s);
     void setDest(Node *d);
-    void setWeight(int w);
+    void setWeight(QString w);
     void setOutWeight(QStringList outW);
     void setDirection(Direction d);
 
@@ -58,11 +58,15 @@ private:
     QString destName;
     QPointF sourcePoint;
     QPointF destPoint;
-    int weight;
+    QString weight;
     QStringList outWeight;
     Direction direction;
     bool selected;
     GraphicWindow *graphic;
+
+    std::vector<QString> _descrOut = {"<none>", "N_CONNECT.REQ", "N_DISCONNECT.REQ", "T_DISCONNECT.IND",
+                                      "T_CONNECT.CONF", "N_DATA.REQ", "T_CONNECT.IND",
+                                      "N_CONNECT.RESP", "T_DATA.IND", "N_DATA.REQ (disconnect)"};
 };
 
 #endif // EDGE_H

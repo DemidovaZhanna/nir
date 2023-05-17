@@ -5,7 +5,7 @@
 #include "mainwindow.h"
 
 /*set new edge with given parameters*/
-Edge::Edge(Node *sourceNode, Node *destNode, int w, QStringList outW, Direction d, GraphicWindow *graphicWindow)
+Edge::Edge(Node *sourceNode, Node *destNode, QString w, QStringList outW, Direction d, GraphicWindow *graphicWindow)
     :source(sourceNode), dest(destNode), weight(w), outWeight(outW), direction(d), graphic(graphicWindow)
 {
     setAcceptedMouseButtons(0);
@@ -70,10 +70,12 @@ QRectF Edge::boundingRect() const
 
     //A->B
     if(source != dest)
+    {
         return QRectF(sourcePoint,
-                QSizeF(destPoint.x() - sourcePoint.x(),destPoint.y() - sourcePoint.y()))
+                      QSizeF(abs(destPoint.x() - sourcePoint.x()), abs(destPoint.y() - sourcePoint.y())))
                 .normalized()
-                .adjusted(-extra, -extra, extra, extra);
+                .adjusted(-extra, -extra, extra, extra);    // расширяем область прямоугольника на extra с каждой стороны
+    }
     //A->A
     else
         return QRectF(sourcePoint,
@@ -125,35 +127,40 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
         QPointF center;
         center.setX((line.x1()+line.x2())/2);
         center.setY((line.y1()+line.y2())/2);
-        QRadialGradient gradient(-3, -3, 10);
-        gradient.setColorAt(0, Qt::darkGray);
-        gradient.setColorAt(1, Qt::black);
-        painter->setBrush(gradient);
-        painter->drawEllipse(center.x() -10,center.y() -10, 21, 21);
+        painter->setBrush(Qt::white);
+        QString message = weight;
 
-        QRectF textRect(center.x()-8, center.y()-8, 19, 19);
-        QString message = QString::number(weight) + ":";
+        outWeight.removeAll(_descrOut.at(0));
         for (int i = 0; i < outWeight.length(); i++)
-        {
-            message += outWeight.at(i);
-            if (outWeight.length() != 1 && i != outWeight.length() - 1)
-                message += ",";
-        }
+            message += "\n" + outWeight.at(i);
 
         QFont font = painter->font();
-        font.setBold(true);
-        font.setPointSize(5);
+        font.setPointSize(4);
         painter->setFont(font);
-        painter->drawText(textRect,Qt::AlignCenter, message);
+
+        int maxWordWidth = painter->fontMetrics().width(weight);
+        if (outWeight.length() != 0)
+            foreach (const QString word, outWeight)
+            {
+                int currentWordWidth = painter->fontMetrics().width(word);
+                if (currentWordWidth > maxWordWidth)
+                    maxWordWidth = currentWordWidth;
+            }
+
+        painter->drawRect(center.x() - maxWordWidth/2, center.y() - 10, maxWordWidth + 2, 21);
+        painter->setPen(Qt::black);
+        QRectF textRect(center.x() - maxWordWidth/2 + 1, center.y() - 8, maxWordWidth, 19);
+        painter->drawText(textRect, Qt::AlignCenter, message);
 
         //arrows
+        painter->setPen(QColor(200,200,200,255));
         double Pi = 3.14159265359;
         double DoublePi = 6.28318531;
         double angle = ::acos(line.dx() / line.length());
         if (line.dy() >= 0)
             angle = DoublePi - angle;
 
-        selected ? painter->setBrush(QColor(200,200,200,255)) : painter->setBrush(Qt::black);
+        !selected ? painter->setBrush(QColor(200,200,200,255)) : painter->setBrush(Qt::red);
 
         QPointF destArrowP1 = destPoint + QPointF(sin(angle - Pi / 3) * 10,
                                                   cos(angle - Pi / 3) * 10);
@@ -166,28 +173,32 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
     else {
         painter->drawArc(source->pos().x()-13,dest->pos().y()-13, 80,80,-210*16,315*16);
 
-        QRadialGradient gradient(-3, -3, 10);
-        gradient.setColorAt(0, Qt::darkGray);
-        gradient.setColorAt(1, Qt::black);
-        painter->setBrush(gradient);       
-        painter->drawEllipse(source->pos().x()+46,source->pos().y()+46, 21, 21);      
-        QRectF textRect(source->pos().x()+48,source->pos().y()+48, 19, 19);
-        QString message = QString::number(weight) + ":";
+        painter->setBrush(Qt::white);
+        QString message = weight;
+
+        outWeight.removeAll(_descrOut.at(0));
         for (int i = 0; i < outWeight.length(); i++)
-        {
-            message += outWeight.at(i);
-            if (outWeight.length() != 1 && i != outWeight.length() - 1)
-                message += ",";
-        }
+            message += "\n" + outWeight.at(i);
 
         QFont font = painter->font();
-        font.setBold(true);
-        font.setPointSize(5);
+        font.setPointSize(4);
         painter->setFont(font);
+
+        int maxWordWidth = painter->fontMetrics().width(weight);;
+        if (outWeight.length() != 0)
+            foreach (const QString word, outWeight)
+            {
+                int currentWordWidth = painter->fontMetrics().width(word);
+                if (currentWordWidth > maxWordWidth)
+                    maxWordWidth = currentWordWidth;
+            }
+
+        painter->drawRect(source->pos().x() + 44,source->pos().y()+16, maxWordWidth + 2, 21);
+        painter->setPen(Qt::black);
+        QRectF textRect(source->pos().x() + 45,source->pos().y()+17, maxWordWidth, 19);
         painter->drawText(textRect,Qt::AlignCenter, message);
 
         // рисуем стрелку на конце
-
         double Pi = 3.14159265359;
         double DoublePi = 6.28318531;
 
@@ -205,8 +216,10 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
         path.lineTo(arrowP1);
         path.lineTo(arrowP2);
         path.lineTo(end);
-        painter->drawPath(path);
 
+        !selected ? painter->setPen(QColor(200,200,200,255)) : painter->setPen(Qt::red);
+        !selected ? painter->setBrush(QColor(200,200,200,255)) : painter->setBrush(Qt::red);
+        painter->drawPath(path);
     }
 }
 
@@ -235,7 +248,7 @@ QString Edge::getDest()
 }
 
 /*return weight of edge*/
-int Edge::getWeight()
+QString Edge::getWeight()
 {
     return weight;
 }
@@ -272,7 +285,7 @@ void Edge::setDest(Node *n)
 }
 
 /*set new weight*/
-void Edge::setWeight(int w)
+void Edge::setWeight(QString w)
 {
     weight = w;
     update();

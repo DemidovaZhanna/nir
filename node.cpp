@@ -113,7 +113,8 @@ bool Node::advance()
 QRectF Node::boundingRect() const
 {
     qreal adjust = 2;
-    return QRectF( -10 - adjust, -10 - adjust, 23 + adjust, 23 + adjust);
+    return QRectF( -20 - adjust, -20 - adjust, 130 + adjust, 35 + adjust);
+//    return QRectF( -10 - adjust, -10 - adjust, 23 + adjust, 23 + adjust);
 }
 
 /*return painter path*/
